@@ -4,13 +4,14 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import { Calendar, Music } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logger";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Eventos",
-  description: "Próximos eventos e programação do LIT Coimbra.",
+  description: "Proximos eventos e programacao do LIT Coimbra.",
 };
 
 const typeColors: Record<string, string> = {
@@ -30,7 +31,7 @@ export default async function EventosPage() {
       orderBy: { date: "asc" },
     });
   } catch (error) {
-    console.error("Failed to fetch events:", error);
+    logError("eventos/page", error);
   }
 
   const upcoming = allEvents.filter((e) => new Date(e.date) >= now);
@@ -44,14 +45,14 @@ export default async function EventosPage() {
           <h1 className="text-4xl md:text-6xl font-bold text-white tracking-wide animate-fade-in">
             Eventos
           </h1>
-          <div className="mt-3 w-20 h-0.5 bg-jungle-500" />
+          <div className="mt-3 w-20 h-0.5 bg-gradient-to-r from-jungle-500 to-neon-green/50" />
         </div>
 
         {/* Upcoming */}
         {upcoming.length > 0 && (
           <section className="mb-20">
             <h2 className="text-xl font-semibold text-jungle-400 uppercase tracking-wider mb-8">
-              Próximos Eventos
+              Proximos Eventos
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
               {upcoming.map((event) => (
@@ -60,13 +61,13 @@ export default async function EventosPage() {
                   href={`/eventos/${event.slug}`}
                   className="group block"
                 >
-                  <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-jungle-800">
+                  <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-jungle-800 card-shine card-glow">
                     {event.image ? (
                       <Image
                         src={event.image}
                         alt={event.title}
                         fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     ) : (
@@ -87,7 +88,7 @@ export default async function EventosPage() {
                         <Calendar size={12} />
                         <time>{format(new Date(event.date), "d MMMM yyyy, EEEE", { locale: pt })}</time>
                       </div>
-                      <h3 className="text-white font-bold text-xl leading-tight group-hover:text-jungle-300 transition-colors">
+                      <h3 className="text-white font-bold text-xl leading-tight group-hover:text-neon-green/80 transition-colors duration-300">
                         {event.title}
                       </h3>
                       {event.lineup && (
@@ -107,7 +108,7 @@ export default async function EventosPage() {
           <div className="text-center py-20">
             <Music size={48} className="mx-auto text-jungle-600 mb-4" />
             <p className="text-gray-400 text-lg">
-              De momento não há eventos agendados. Volta em breve!
+              De momento nao ha eventos agendados. Volta em breve!
             </p>
           </div>
         )}
@@ -125,7 +126,7 @@ export default async function EventosPage() {
                   href={`/eventos/${event.slug}`}
                   className="group block"
                 >
-                  <div className="relative aspect-square rounded-sm overflow-hidden bg-jungle-800 grayscale hover:grayscale-0 transition-all duration-500">
+                  <div className="relative aspect-square rounded-sm overflow-hidden bg-jungle-800 grayscale hover:grayscale-0 transition-all duration-500 card-glow">
                     {event.image ? (
                       <Image
                         src={event.image}

@@ -30,13 +30,13 @@ export default function EventsPreview({ events }: { events: EventPreview[] }) {
         <div className="flex items-end justify-between mb-12">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-white tracking-wide">
-              Próximos Eventos
+              Proximos Eventos
             </h2>
-            <div className="mt-2 w-16 h-0.5 bg-jungle-500" />
+            <div className="mt-2 w-16 h-0.5 bg-gradient-to-r from-jungle-500 to-neon-green/50" />
           </div>
           <Link
             href="/eventos"
-            className="hidden sm:flex items-center gap-2 text-jungle-400 hover:text-jungle-300 transition-colors text-sm uppercase tracking-wider"
+            className="hidden sm:flex items-center gap-2 text-jungle-400 hover:text-neon-green transition-colors duration-300 text-sm uppercase tracking-wider"
           >
             Ver todos <ArrowRight size={16} />
           </Link>
@@ -49,13 +49,13 @@ export default function EventsPreview({ events }: { events: EventPreview[] }) {
               href={`/eventos/${event.slug}`}
               className="group block"
             >
-              <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-jungle-800">
+              <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-jungle-800 card-shine card-glow">
                 {event.image ? (
                   <Image
                     src={event.image}
                     alt={event.title}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
                 ) : (
@@ -82,7 +82,7 @@ export default function EventsPreview({ events }: { events: EventPreview[] }) {
                       {format(new Date(event.date), "d MMM, EEEE", { locale: pt })}
                     </time>
                   </div>
-                  <h3 className="text-white font-bold text-lg leading-tight group-hover:text-jungle-300 transition-colors">
+                  <h3 className="text-white font-bold text-lg leading-tight group-hover:text-neon-green/80 transition-colors duration-300">
                     {event.title}
                   </h3>
                 </div>
@@ -93,7 +93,7 @@ export default function EventsPreview({ events }: { events: EventPreview[] }) {
 
         <Link
           href="/eventos"
-          className="sm:hidden flex items-center justify-center gap-2 mt-8 text-jungle-400 hover:text-jungle-300 transition-colors text-sm uppercase tracking-wider"
+          className="sm:hidden flex items-center justify-center gap-2 mt-8 text-jungle-400 hover:text-neon-green transition-colors duration-300 text-sm uppercase tracking-wider"
         >
           Ver todos os eventos <ArrowRight size={16} />
         </Link>

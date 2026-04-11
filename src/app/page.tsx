@@ -3,6 +3,7 @@ import EventsPreview from "@/components/home/EventsPreview";
 import GalleryPreview from "@/components/home/GalleryPreview";
 import ContactCTA from "@/components/home/ContactCTA";
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logger";
 import { getSettings, isSectionEnabled } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";

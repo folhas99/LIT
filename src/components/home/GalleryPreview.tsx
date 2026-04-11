@@ -27,11 +27,11 @@ export default function GalleryPreview({
             <h2 className="text-3xl md:text-4xl font-bold text-white tracking-wide">
               Galeria
             </h2>
-            <div className="mt-2 w-16 h-0.5 bg-jungle-500" />
+            <div className="mt-2 w-16 h-0.5 bg-gradient-to-r from-jungle-500 to-accent-purple/50" />
           </div>
           <Link
             href="/galeria"
-            className="hidden sm:flex items-center gap-2 text-jungle-400 hover:text-jungle-300 transition-colors text-sm uppercase tracking-wider"
+            className="hidden sm:flex items-center gap-2 text-jungle-400 hover:text-neon-green transition-colors duration-300 text-sm uppercase tracking-wider"
           >
             Ver tudo <ArrowRight size={16} />
           </Link>
@@ -42,14 +42,14 @@ export default function GalleryPreview({
             <Link
               key={gallery.id}
               href={`/galeria/${gallery.slug}`}
-              className="group relative aspect-square overflow-hidden rounded-sm bg-jungle-800"
+              className="group relative aspect-square overflow-hidden rounded-sm bg-jungle-800 card-shine card-glow"
             >
               {gallery.coverImage ? (
                 <Image
                   src={gallery.coverImage}
                   alt={gallery.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
                   sizes="(max-width: 768px) 50vw, 33vw"
                 />
               ) : (
@@ -75,7 +75,7 @@ export default function GalleryPreview({
 
         <Link
           href="/galeria"
-          className="sm:hidden flex items-center justify-center gap-2 mt-8 text-jungle-400 hover:text-jungle-300 transition-colors text-sm uppercase tracking-wider"
+          className="sm:hidden flex items-center justify-center gap-2 mt-8 text-jungle-400 hover:text-neon-green transition-colors duration-300 text-sm uppercase tracking-wider"
         >
           Ver galeria completa <ArrowRight size={16} />
         </Link>

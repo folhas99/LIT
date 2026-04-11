@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logger";
 import type { Metadata } from "next";
 import GalleryGrid from "./GalleryGrid";
 
@@ -44,7 +45,7 @@ export default async function GaleriaSlugPage({
       },
     });
   } catch (error) {
-    console.error("Failed to fetch gallery:", error);
+    logError("galeria/[slug]", error);
   }
 
   if (!gallery) notFound();

@@ -23,7 +23,7 @@ type FooterProps = {
 
 export default function Footer({ settings, sections }: FooterProps) {
   return (
-    <footer className="bg-jungle-900 border-t border-jungle-700/30">
+    <footer className="bg-jungle-900 gradient-border-top">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand */}
@@ -40,10 +40,10 @@ export default function Footer({ settings, sections }: FooterProps) {
                   href={settings.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-accent-pink transition-colors"
+                  className="w-10 h-10 rounded-full border border-jungle-700/50 flex items-center justify-center text-gray-400 hover:text-accent-pink hover:border-accent-pink social-icon-hover hover:shadow-[0_0_15px_rgba(232,67,147,0.15)]"
                   aria-label="Instagram"
                 >
-                  <InstagramIcon size={20} />
+                  <InstagramIcon size={18} />
                 </a>
               )}
               {settings.facebook && (
@@ -51,19 +51,19 @@ export default function Footer({ settings, sections }: FooterProps) {
                   href={settings.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-accent-blue transition-colors"
+                  className="w-10 h-10 rounded-full border border-jungle-700/50 flex items-center justify-center text-gray-400 hover:text-accent-blue hover:border-accent-blue social-icon-hover hover:shadow-[0_0_15px_rgba(9,132,227,0.15)]"
                   aria-label="Facebook"
                 >
-                  <FacebookIcon size={20} />
+                  <FacebookIcon size={18} />
                 </a>
               )}
               {settings.email && (
                 <a
                   href={`mailto:${settings.email}`}
-                  className="text-gray-400 hover:text-accent-orange transition-colors"
+                  className="w-10 h-10 rounded-full border border-jungle-700/50 flex items-center justify-center text-gray-400 hover:text-accent-orange hover:border-accent-orange social-icon-hover hover:shadow-[0_0_15px_rgba(232,114,28,0.15)]"
                   aria-label="Email"
                 >
-                  <Mail size={20} />
+                  <Mail size={18} />
                 </a>
               )}
             </div>
@@ -72,38 +72,38 @@ export default function Footer({ settings, sections }: FooterProps) {
           {/* Navigation */}
           <div>
             <h4 className="text-white font-semibold mb-4 uppercase text-sm tracking-wider">
-              Navegação
+              Navegacao
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">
+                <Link href="/" className="text-gray-400 hover:text-neon-green/70 text-sm transition-colors duration-300">
                   Home
                 </Link>
               </li>
               {sections.events && (
                 <li>
-                  <Link href="/eventos" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  <Link href="/eventos" className="text-gray-400 hover:text-neon-green/70 text-sm transition-colors duration-300">
                     Eventos
                   </Link>
                 </li>
               )}
               {sections.gallery && (
                 <li>
-                  <Link href="/galeria" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  <Link href="/galeria" className="text-gray-400 hover:text-neon-green/70 text-sm transition-colors duration-300">
                     Galeria
                   </Link>
                 </li>
               )}
               {sections.reservations && (
                 <li>
-                  <Link href="/reservas" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  <Link href="/reservas" className="text-gray-400 hover:text-neon-green/70 text-sm transition-colors duration-300">
                     Reservas VIP
                   </Link>
                 </li>
               )}
               {sections.about && (
                 <li>
-                  <Link href="/sobre" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  <Link href="/sobre" className="text-gray-400 hover:text-neon-green/70 text-sm transition-colors duration-300">
                     Sobre
                   </Link>
                 </li>
@@ -114,25 +114,25 @@ export default function Footer({ settings, sections }: FooterProps) {
           {/* Info */}
           <div>
             <h4 className="text-white font-semibold mb-4 uppercase text-sm tracking-wider">
-              Informação
+              Informacao
             </h4>
             <ul className="space-y-3">
               {settings.address && (
                 <li className="flex items-start gap-2 text-gray-400 text-sm">
-                  <MapPin size={16} className="mt-0.5 shrink-0" />
+                  <MapPin size={16} className="mt-0.5 shrink-0 text-jungle-500" />
                   <span>{settings.address}</span>
                 </li>
               )}
               {settings.schedule && (
                 <li className="flex items-start gap-2 text-gray-400 text-sm">
-                  <Clock size={16} className="mt-0.5 shrink-0" />
+                  <Clock size={16} className="mt-0.5 shrink-0 text-jungle-500" />
                   <span>{settings.schedule}</span>
                 </li>
               )}
               {settings.email && (
                 <li className="flex items-start gap-2 text-gray-400 text-sm">
-                  <Mail size={16} className="mt-0.5 shrink-0" />
-                  <a href={`mailto:${settings.email}`} className="hover:text-white transition-colors">
+                  <Mail size={16} className="mt-0.5 shrink-0 text-jungle-500" />
+                  <a href={`mailto:${settings.email}`} className="hover:text-neon-green/70 transition-colors duration-300">
                     {settings.email}
                   </a>
                 </li>
@@ -141,7 +141,7 @@ export default function Footer({ settings, sections }: FooterProps) {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-jungle-700/30 text-center text-gray-500 text-xs">
+        <div className="mt-12 pt-8 border-t border-jungle-700/20 text-center text-gray-500 text-xs">
           &copy; {new Date().getFullYear()} {settings.siteName}. Todos os direitos reservados.
         </div>
       </div>

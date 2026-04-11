@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 
 type NavItem = {
@@ -22,6 +22,15 @@ export default function Header({
   };
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navItems: NavItem[] = [
     { label: "Eventos", href: "/eventos", enabled: sections.events },
@@ -32,12 +41,18 @@ export default function Header({
   ].filter((item) => item.enabled);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-jungle-950/80 backdrop-blur-md border-b border-jungle-700/30">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? "bg-jungle-950/90 backdrop-blur-xl border-b border-jungle-700/40 shadow-[0_4px_30px_rgba(0,0,0,0.3)]"
+          : "bg-jungle-950/60 backdrop-blur-md border-b border-jungle-700/20"
+      }`}
+    >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-white tracking-wider">
+          <Link href="/" className="flex items-center gap-2 group">
+            <span className="text-2xl font-bold text-white tracking-wider group-hover:text-neon-green/90 transition-colors duration-300">
               LIT
             </span>
             <span className="text-xs text-jungle-400 tracking-widest uppercase hidden sm:block">
@@ -51,7 +66,7 @@ export default function Header({
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm text-gray-300 hover:text-white transition-colors duration-200 tracking-wide uppercase"
+                className="relative text-sm text-gray-300 hover:text-white transition-colors duration-300 tracking-wide uppercase py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-neon-green/60 after:transition-all after:duration-300 hover:after:w-full"
               >
                 {item.label}
               </Link>
@@ -71,14 +86,14 @@ export default function Header({
 
       {/* Mobile Nav */}
       {isOpen && (
-        <div className="md:hidden bg-jungle-900/95 backdrop-blur-md border-t border-jungle-700/30">
+        <div className="md:hidden bg-jungle-900/95 backdrop-blur-xl border-t border-jungle-700/30">
           <div className="px-4 py-6 space-y-4">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className="block text-lg text-gray-300 hover:text-white transition-colors duration-200 tracking-wide uppercase"
+                className="block text-lg text-gray-300 hover:text-neon-green/80 transition-colors duration-300 tracking-wide uppercase"
               >
                 {item.label}
               </Link>

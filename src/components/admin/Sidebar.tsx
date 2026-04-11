@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  ScrollText,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ const navItems = [
   { label: "Reservas", href: "/admin/reservas", icon: BookOpen },
   { label: "Utilizadores", href: "/admin/utilizadores", icon: Users },
   { label: "Definições", href: "/admin/definicoes", icon: Settings },
+  { label: "Logs", href: "/admin/logs", icon: ScrollText },
 ];
 
 export default function Sidebar() {

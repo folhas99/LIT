@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import { Camera } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logger";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
 };
 
 export default async function GaleriaPage() {
-  let galleries: Awaited<ReturnType<typeof prisma.gallery.findMany>> = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let galleries: any[] = [];
   try {
     galleries = await prisma.gallery.findMany({
       where: { published: true },
@@ -22,7 +24,7 @@ export default async function GaleriaPage() {
       include: { _count: { select: { photos: true } } },
     });
   } catch (error) {
-    console.error("Failed to fetch galleries:", error);
+    logError("galeria/page", error);
   }
 
   return (
@@ -32,7 +34,7 @@ export default async function GaleriaPage() {
           <h1 className="text-4xl md:text-6xl font-bold text-white tracking-wide animate-fade-in">
             Galeria
           </h1>
-          <div className="mt-3 w-20 h-0.5 bg-jungle-500" />
+          <div className="mt-3 w-20 h-0.5 bg-gradient-to-r from-jungle-500 to-accent-purple/50" />
           <p className="mt-4 text-gray-400 text-lg">
             As melhores fotos das nossas noites.
           </p>
@@ -42,7 +44,7 @@ export default async function GaleriaPage() {
           <div className="text-center py-20">
             <Camera size={48} className="mx-auto text-jungle-600 mb-4" />
             <p className="text-gray-400 text-lg">
-              Ainda não há galerias publicadas. Volta em breve!
+              Ainda nao ha galerias publicadas. Volta em breve!
             </p>
           </div>
         )}
@@ -54,13 +56,13 @@ export default async function GaleriaPage() {
               href={`/galeria/${gallery.slug}`}
               className="group block"
             >
-              <div className="relative aspect-[4/3] rounded-sm overflow-hidden bg-jungle-800">
+              <div className="relative aspect-[4/3] rounded-sm overflow-hidden bg-jungle-800 card-shine card-glow">
                 {gallery.coverImage ? (
                   <Image
                     src={gallery.coverImage}
                     alt={gallery.title}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 ) : (
@@ -74,7 +76,7 @@ export default async function GaleriaPage() {
                   <p className="text-xs text-jungle-300 mb-1">
                     {format(new Date(gallery.date), "d MMMM yyyy", { locale: pt })}
                   </p>
-                  <h3 className="text-white font-bold text-lg group-hover:text-jungle-300 transition-colors">
+                  <h3 className="text-white font-bold text-lg group-hover:text-neon-green/80 transition-colors duration-300">
                     {gallery.title}
                   </h3>
                   <p className="text-gray-400 text-xs mt-1">

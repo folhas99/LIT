@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import { ArrowLeft, Calendar, Clock, Music, Camera } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { logError } from "@/lib/logger";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -41,7 +42,7 @@ export default async function EventoPage({
       include: { gallery: { include: { photos: { take: 4 } } } },
     });
   } catch (error) {
-    console.error("Failed to fetch event:", error);
+    logError("eventos/[slug]", error);
   }
 
   if (!event) notFound();
