@@ -13,7 +13,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const gallery = await prisma.gallery.findUnique({ where: { slug } });
+  let gallery;
+  try {
+    gallery = await prisma.gallery.findUnique({ where: { slug } });
+  } catch { /* ignore */ }
   if (!gallery) return { title: "Galeria não encontrada" };
   return {
     title: gallery.title,
@@ -31,13 +34,18 @@ export default async function GaleriaSlugPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const gallery = await prisma.gallery.findUnique({
-    where: { slug },
-    include: {
-      photos: { orderBy: { order: "asc" } },
-      event: { select: { title: true, slug: true } },
-    },
-  });
+  let gallery;
+  try {
+    gallery = await prisma.gallery.findUnique({
+      where: { slug },
+      include: {
+        photos: { orderBy: { order: "asc" } },
+        event: { select: { title: true, slug: true } },
+      },
+    });
+  } catch (error) {
+    console.error("Failed to fetch gallery:", error);
+  }
 
   if (!gallery) notFound();
 

@@ -14,11 +14,16 @@ export const metadata: Metadata = {
 };
 
 export default async function GaleriaPage() {
-  const galleries = await prisma.gallery.findMany({
-    where: { published: true },
-    orderBy: { date: "desc" },
-    include: { _count: { select: { photos: true } } },
-  });
+  let galleries: Awaited<ReturnType<typeof prisma.gallery.findMany>> = [];
+  try {
+    galleries = await prisma.gallery.findMany({
+      where: { published: true },
+      orderBy: { date: "desc" },
+      include: { _count: { select: { photos: true } } },
+    });
+  } catch (error) {
+    console.error("Failed to fetch galleries:", error);
+  }
 
   return (
     <div className="min-h-screen py-12 md:py-20 px-4">

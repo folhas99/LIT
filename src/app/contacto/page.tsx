@@ -12,7 +12,32 @@ export const metadata: Metadata = {
 };
 
 export default async function ContactoPage() {
-  const settings = await getSettings();
+  let settings;
+  try {
+    settings = await getSettings();
+  } catch (error) {
+    console.error("Failed to fetch settings:", error);
+    settings = {
+      siteName: "LIT Coimbra",
+      siteDescription: "A tua nova casa! Discoteca em Coimbra.",
+      address: "Coimbra, Portugal",
+      phone: "",
+      email: "info@litcoimbra.pt",
+      instagram: "https://www.instagram.com/lit.coimbra/",
+      facebook: "",
+      tiktok: "",
+      schedule: "Quarta a Sábado, 23:00 - 06:00",
+      heroTitle: "LIT Coimbra",
+      heroSubtitle: "A tua nova casa",
+      heroImage: "",
+      heroVideo: "",
+      sectionEvents: "true",
+      sectionGallery: "true",
+      sectionReservations: "true",
+      sectionAbout: "true",
+      sectionContact: "true",
+    };
+  }
 
   return (
     <div className="min-h-screen py-12 md:py-20 px-4">

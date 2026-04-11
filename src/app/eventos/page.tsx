@@ -23,10 +23,15 @@ const typeColors: Record<string, string> = {
 
 export default async function EventosPage() {
   const now = new Date();
-  const allEvents = await prisma.event.findMany({
-    where: { published: true },
-    orderBy: { date: "asc" },
-  });
+  let allEvents: Awaited<ReturnType<typeof prisma.event.findMany>> = [];
+  try {
+    allEvents = await prisma.event.findMany({
+      where: { published: true },
+      orderBy: { date: "asc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch events:", error);
+  }
 
   const upcoming = allEvents.filter((e) => new Date(e.date) >= now);
   const past = allEvents.filter((e) => new Date(e.date) < now).reverse();

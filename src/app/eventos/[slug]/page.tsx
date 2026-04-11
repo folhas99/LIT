@@ -13,7 +13,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const event = await prisma.event.findUnique({ where: { slug } });
+  let event;
+  try {
+    event = await prisma.event.findUnique({ where: { slug } });
+  } catch { /* ignore */ }
   if (!event) return { title: "Evento não encontrado" };
   return {
     title: event.title,
@@ -31,10 +34,15 @@ export default async function EventoPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const event = await prisma.event.findUnique({
-    where: { slug },
-    include: { gallery: { include: { photos: { take: 4 } } } },
-  });
+  let event;
+  try {
+    event = await prisma.event.findUnique({
+      where: { slug },
+      include: { gallery: { include: { photos: { take: 4 } } } },
+    });
+  } catch (error) {
+    console.error("Failed to fetch event:", error);
+  }
 
   if (!event) notFound();
 
