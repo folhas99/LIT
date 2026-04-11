@@ -1,29 +1,25 @@
-// Production seed script - runs after migrations
-// Creates admin user and default site settings
-const { PrismaClient } = require("../src/generated/prisma/client");
-const { PrismaPg } = require("@prisma/adapter-pg");
+// Production seed script - uses pg directly (no Prisma client needed)
+const { Pool } = require("pg");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 async function main() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-  const prisma = new PrismaClient({ adapter });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
   try {
     // Check if admin user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: "admin@litcoimbra.pt" },
-    });
+    const { rows: existingUsers } = await pool.query(
+      'SELECT id FROM "User" WHERE email = $1',
+      ["admin@litcoimbra.pt"]
+    );
 
-    if (!existingUser) {
+    if (existingUsers.length === 0) {
       const hashedPassword = await bcrypt.hash("Ftiago@90", 12);
-      await prisma.user.create({
-        data: {
-          email: "admin@litcoimbra.pt",
-          password: hashedPassword,
-          name: "Admin",
-          role: "SUPER_ADMIN",
-        },
-      });
+      const id = crypto.randomBytes(12).toString("hex");
+      await pool.query(
+        'INSERT INTO "User" (id, email, password, name, role, "createdAt") VALUES ($1, $2, $3, $4, $5, NOW())',
+        [id, "admin@litcoimbra.pt", hashedPassword, "Admin", "SUPER_ADMIN"]
+      );
       console.log("Admin user created");
     } else {
       console.log("Admin user already exists, skipping");
@@ -47,17 +43,22 @@ async function main() {
     ];
 
     for (const setting of defaultSettings) {
-      const existing = await prisma.siteSetting.findUnique({
-        where: { key: setting.key },
-      });
-      if (!existing) {
-        await prisma.siteSetting.create({ data: setting });
+      const { rows } = await pool.query(
+        'SELECT id FROM "SiteSetting" WHERE key = $1',
+        [setting.key]
+      );
+      if (rows.length === 0) {
+        const id = crypto.randomBytes(12).toString("hex");
+        await pool.query(
+          'INSERT INTO "SiteSetting" (id, key, value) VALUES ($1, $2, $3)',
+          [id, setting.key, setting.value]
+        );
       }
     }
 
     console.log("Seed completed: admin user + default settings ready");
   } finally {
-    await prisma.$disconnect();
+    await pool.end();
   }
 }
 
