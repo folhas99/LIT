@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { authOptions } from "@/lib/auth";
 import Sidebar from "@/components/admin/Sidebar";
 import SessionProvider from "@/components/admin/SessionProvider";
@@ -15,9 +15,12 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isLoginPage = pathname === "/admin/login";
 
-  // Allow login page without auth
-  if (!session) {
+  // Login page: no sidebar, no auth required
+  if (!session || isLoginPage) {
     return (
       <SessionProvider>
         <div className="min-h-screen bg-jungle-950">{children}</div>
