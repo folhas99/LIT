@@ -10,9 +10,21 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  return NextResponse.next();
+  // Pass the current pathname as a header so layouts can read it
+  const response = NextResponse.next();
+  response.headers.set("x-pathname", request.nextUrl.pathname);
+  return response;
 }
 
 export const config = {
-  matcher: ["/uploads/:path*"],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico
+     * - public files (images, etc.)
+     */
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -53,6 +54,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isAdmin = pathname.startsWith("/admin");
+
   let settings;
   let sections = {
     events: true,
@@ -62,25 +67,29 @@ export default async function RootLayout({
     contact: true,
   };
 
-  try {
-    settings = await getSettings();
-    sections = {
-      events: isSectionEnabled(settings, "sectionEvents"),
-      gallery: isSectionEnabled(settings, "sectionGallery"),
-      reservations: isSectionEnabled(settings, "sectionReservations"),
-      about: isSectionEnabled(settings, "sectionAbout"),
-      contact: isSectionEnabled(settings, "sectionContact"),
-    };
-  } catch {
-    settings = { ...settingsDefaults };
+  if (!isAdmin) {
+    try {
+      settings = await getSettings();
+      sections = {
+        events: isSectionEnabled(settings, "sectionEvents"),
+        gallery: isSectionEnabled(settings, "sectionGallery"),
+        reservations: isSectionEnabled(settings, "sectionReservations"),
+        about: isSectionEnabled(settings, "sectionAbout"),
+        contact: isSectionEnabled(settings, "sectionContact"),
+      };
+    } catch {
+      settings = { ...settingsDefaults };
+    }
   }
 
   return (
     <html lang="pt-PT" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
-        <Header sections={sections} />
-        <main className="flex-1 pt-16 md:pt-20">{children}</main>
-        <Footer settings={settings} sections={sections} />
+        {!isAdmin && <Header sections={sections} />}
+        <main className={!isAdmin ? "flex-1 pt-16 md:pt-20" : "flex-1"}>
+          {children}
+        </main>
+        {!isAdmin && <Footer settings={settings ?? { ...settingsDefaults }} sections={sections} />}
       </body>
     </html>
   );
