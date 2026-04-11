@@ -12,7 +12,7 @@ const tabs = [
   { id: "sobre", label: "Sobre" },
   { id: "contacto", label: "Contacto" },
   { id: "reservas", label: "Reservas" },
-  { id: "rodape", label: "Rodap\u00e9" },
+  { id: "rodape", label: "Rodapé" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -33,7 +33,7 @@ export default function EditorPaginasPage() {
         setLoading(false);
       })
       .catch(() => {
-        setError("Erro ao carregar defini\u00e7\u00f5es.");
+        setError("Erro ao carregar definições.");
         setLoading(false);
       });
   }, []);
@@ -61,7 +61,7 @@ export default function EditorPaginasPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch {
-      setError("Erro ao guardar as altera\u00e7\u00f5es.");
+      setError("Erro ao guardar as alterações.");
     } finally {
       setSaving(false);
     }
@@ -74,7 +74,7 @@ export default function EditorPaginasPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-white">Editor de P\u00e1ginas</h1>
+        <h1 className="text-2xl font-bold text-white">Editor de Páginas</h1>
         <div className="flex items-center gap-3">
           {saved && (
             <span className="flex items-center gap-1 text-green-400 text-sm">
@@ -229,25 +229,25 @@ function HomepageTab({ settings, update }: TabProps) {
         <h2 className="text-lg font-semibold text-white mb-4">Hero</h2>
         <div className="space-y-4">
           <TextField
-            label="T\u00edtulo do Hero"
+            label="Título do Hero"
             value={settings.contentHeroTitle || ""}
             onChange={(v) => update("contentHeroTitle", v)}
             placeholder="LIT Coimbra"
           />
           <TextField
-            label="Subt\u00edtulo do Hero"
+            label="Subtítulo do Hero"
             value={settings.contentHeroSubtitle || ""}
             onChange={(v) => update("contentHeroSubtitle", v)}
             placeholder="A tua nova casa"
           />
           <TextField
-            label="Texto do Bot\u00e3o 1 (CTA)"
+            label="Texto do Botão 1 (CTA)"
             value={settings.contentHeroCTA1Text || ""}
             onChange={(v) => update("contentHeroCTA1Text", v)}
             placeholder="Reservar Mesa"
           />
           <TextField
-            label="Texto do Bot\u00e3o 2 (CTA)"
+            label="Texto do Botão 2 (CTA)"
             value={settings.contentHeroCTA2Text || ""}
             onChange={(v) => update("contentHeroCTA2Text", v)}
             placeholder="Ver Eventos"
@@ -258,14 +258,14 @@ function HomepageTab({ settings, update }: TabProps) {
             onChange={(v) => update("heroImage", v)}
           />
           <TextField
-            label="URL do V\u00eddeo Hero"
+            label="URL do Vídeo Hero"
             value={settings.heroVideo || ""}
             onChange={(v) => update("heroVideo", v)}
             placeholder="https://..."
           />
         </div>
 
-        <LivePreview label="Pr\u00e9-visualiza\u00e7\u00e3o do Hero">
+        <LivePreview label="Pré-visualização do Hero">
           <div className="text-center py-6">
             <h3 className="text-2xl font-bold text-white tracking-wider">
               {settings.contentHeroTitle || "LIT Coimbra"}
@@ -287,17 +287,17 @@ function HomepageTab({ settings, update }: TabProps) {
 
       <section>
         <h2 className="text-lg font-semibold text-white mb-4">
-          T\u00edtulos das Sec\u00e7\u00f5es
+          Títulos das Secções
         </h2>
         <div className="space-y-4">
           <TextField
-            label="T\u00edtulo Sec\u00e7\u00e3o Eventos"
+            label="Título Secção Eventos"
             value={settings.contentEventsTitle || ""}
             onChange={(v) => update("contentEventsTitle", v)}
             placeholder="Eventos"
           />
           <TextField
-            label="T\u00edtulo Sec\u00e7\u00e3o Galeria"
+            label="Título Secção Galeria"
             value={settings.contentGaleriaTitle || ""}
             onChange={(v) => update("contentGaleriaTitle", v)}
             placeholder="Galeria"
@@ -317,32 +317,32 @@ function SobreTab({ settings, update }: TabProps) {
     <div className="space-y-8">
       <section>
         <h2 className="text-lg font-semibold text-white mb-4">
-          P\u00e1gina Sobre
+          Página Sobre
         </h2>
         <div className="space-y-4">
           <TextField
-            label="T\u00edtulo da P\u00e1gina"
+            label="Título da Página"
             value={settings.contentAboutTitle || ""}
             onChange={(v) => update("contentAboutTitle", v)}
             placeholder="Sobre"
           />
           <TextAreaField
-            label="Par\u00e1grafo 1"
+            label="Parágrafo 1"
             value={settings.contentAboutText1 || ""}
             onChange={(v) => update("contentAboutText1", v)}
             rows={5}
-            placeholder="Texto principal sobre o espa\u00e7o..."
+            placeholder="Texto principal sobre o espaço..."
           />
           <TextAreaField
-            label="Par\u00e1grafo 2"
+            label="Parágrafo 2"
             value={settings.contentAboutText2 || ""}
             onChange={(v) => update("contentAboutText2", v)}
             rows={5}
-            placeholder="Mais detalhes sobre o espa\u00e7o..."
+            placeholder="Mais detalhes sobre o espaço..."
           />
         </div>
 
-        <LivePreview label="Pr\u00e9-visualiza\u00e7\u00e3o da p\u00e1gina Sobre">
+        <LivePreview label="Pré-visualização da página Sobre">
           <div className="py-4">
             <h3 className="text-xl font-bold text-white tracking-wide mb-4">
               {settings.contentAboutTitle || "Sobre"}
@@ -369,25 +369,25 @@ function ContactoTab({ settings, update }: TabProps) {
     <div className="space-y-8">
       <section>
         <h2 className="text-lg font-semibold text-white mb-4">
-          P\u00e1gina Contacto
+          Página Contacto
         </h2>
         <div className="space-y-4">
           <TextField
-            label="T\u00edtulo da Sec\u00e7\u00e3o"
+            label="Título da Secção"
             value={settings.contentContactTitle || ""}
             onChange={(v) => update("contentContactTitle", v)}
             placeholder="Fala connosco"
           />
           <TextAreaField
-            label="Descri\u00e7\u00e3o"
+            label="Descrição"
             value={settings.contentContactText || ""}
             onChange={(v) => update("contentContactText", v)}
             rows={3}
-            placeholder="Tens alguma quest\u00e3o ou sugest\u00e3o?..."
+            placeholder="Tens alguma questão ou sugestão?..."
           />
         </div>
 
-        <LivePreview label="Pr\u00e9-visualiza\u00e7\u00e3o do Contacto">
+        <LivePreview label="Pré-visualização do Contacto">
           <div className="py-4">
             <h3 className="text-xl font-bold text-white mb-2">
               {settings.contentContactTitle || "Fala connosco"}
@@ -411,17 +411,17 @@ function ReservasTab({ settings, update }: TabProps) {
     <div className="space-y-8">
       <section>
         <h2 className="text-lg font-semibold text-white mb-4">
-          P\u00e1gina Reservas
+          Página Reservas
         </h2>
         <div className="space-y-4">
           <TextField
-            label="T\u00edtulo da P\u00e1gina"
+            label="Título da Página"
             value={settings.contentReservasTitle || ""}
             onChange={(v) => update("contentReservasTitle", v)}
             placeholder="Reserva VIP"
           />
           <TextAreaField
-            label="Descri\u00e7\u00e3o"
+            label="Descrição"
             value={settings.contentReservasText || ""}
             onChange={(v) => update("contentReservasText", v)}
             rows={3}
@@ -429,7 +429,7 @@ function ReservasTab({ settings, update }: TabProps) {
           />
         </div>
 
-        <LivePreview label="Pr\u00e9-visualiza\u00e7\u00e3o das Reservas">
+        <LivePreview label="Pré-visualização das Reservas">
           <div className="py-4">
             <h3 className="text-xl font-bold text-white mb-2">
               {settings.contentReservasTitle || "Reserva VIP"}
@@ -445,7 +445,7 @@ function ReservasTab({ settings, update }: TabProps) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Tab: Rodap\u00e9                                                         */
+/* Tab: Rodapé                                                         */
 /* ------------------------------------------------------------------ */
 
 function RodapeTab({ settings, update }: TabProps) {
@@ -453,18 +453,18 @@ function RodapeTab({ settings, update }: TabProps) {
     <div className="space-y-8">
       <section>
         <h2 className="text-lg font-semibold text-white mb-4">
-          Rodap\u00e9 (Footer)
+          Rodapé (Footer)
         </h2>
         <div className="space-y-4">
           <TextField
-            label="Texto do Rodap\u00e9"
+            label="Texto do Rodapé"
             value={settings.contentFooterText || ""}
             onChange={(v) => update("contentFooterText", v)}
             placeholder="A tua nova casa em Coimbra."
           />
         </div>
 
-        <LivePreview label="Pr\u00e9-visualiza\u00e7\u00e3o do Rodap\u00e9">
+        <LivePreview label="Pré-visualização do Rodapé">
           <div className="py-4 text-center">
             <p className="text-sm text-gray-400">
               {settings.contentFooterText || "A tua nova casa em Coimbra."}
