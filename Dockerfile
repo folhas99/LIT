@@ -32,4 +32,4 @@ EXPOSE 2999
 ENV PORT=2999
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node server.js"]
+CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node prisma/seed-prod.js && node server.js"]
