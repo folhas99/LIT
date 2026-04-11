@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  description String?   @db.Text
+  date        DateTime
+  endDate     DateTime?
+  image       String?
+  lineup      String?   @db.Text
+  eventType   String?
+  featured    Boolean   @default(false)
+  published   Boolean   @default(true)
+  gallery     Gallery?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Gallery {
+  id         String   @id @default(cuid())
+  title      String
+  slug       String   @unique
+  eventId    String?  @unique
+  event      Event?   @relation(fields: [eventId], references: [id])
+  coverImage String?
+  photos     Photo[]
+  date       DateTime
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model Photo {
+  id        String  @id @default(cuid())
+  url       String
+  alt       String?
+  order     Int     @default(0)
+  galleryId String
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+}
+
+model Reservation {
+  id        String            @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  date      DateTime
+  guests    Int
+  message   String?           @db.Text
+  status    ReservationStatus @default(PENDING)
+  eventId   String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+}
