@@ -15,6 +15,9 @@ import {
   X,
   ExternalLink,
   ScrollText,
+  FileEdit,
+  ImageIcon,
+  Palette,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -25,7 +28,10 @@ const navItems = [
   { label: "Galeria", href: "/admin/galeria", icon: Camera },
   { label: "Reservas", href: "/admin/reservas", icon: BookOpen },
   { label: "Utilizadores", href: "/admin/utilizadores", icon: Users },
-  { label: "Definições", href: "/admin/definicoes", icon: Settings },
+  { label: "Editor Visual", href: "/admin/editor", icon: Palette },
+  { label: "Media", href: "/admin/editor/media", icon: ImageIcon },
+  { label: "Editor P\u00e1ginas", href: "/admin/editor/paginas", icon: FileEdit },
+  { label: "Defini\u00e7\u00f5es", href: "/admin/definicoes", icon: Settings },
   { label: "Logs", href: "/admin/logs", icon: ScrollText },
 ];
 
@@ -33,8 +39,18 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+  const isActive = (href: string) => {
+    if (href === "/admin") return pathname === "/admin";
+    if (!pathname.startsWith(href)) return false;
+    // Avoid highlighting parent routes when a more specific child matches
+    const hasMoreSpecificMatch = navItems.some(
+      (item) =>
+        item.href !== href &&
+        item.href.startsWith(href) &&
+        pathname.startsWith(item.href)
+    );
+    return !hasMoreSpecificMatch;
+  };
 
   return (
     <>

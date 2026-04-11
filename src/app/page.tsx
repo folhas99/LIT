@@ -4,7 +4,7 @@ import GalleryPreview from "@/components/home/GalleryPreview";
 import ContactCTA from "@/components/home/ContactCTA";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
-import { getSettings, isSectionEnabled } from "@/lib/settings";
+import { getSettings, isSectionEnabled, defaults as settingsDefaults } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -34,26 +34,7 @@ export default async function HomePage() {
       });
     }
   } catch {
-    settings = {
-      siteName: "LIT Coimbra",
-      siteDescription: "A tua nova casa!",
-      address: "Coimbra, Portugal",
-      phone: "",
-      email: "info@litcoimbra.pt",
-      instagram: "https://www.instagram.com/lit.coimbra/",
-      facebook: "",
-      tiktok: "",
-      schedule: "Quarta a Sábado, 23:00 - 06:00",
-      heroTitle: "LIT Coimbra",
-      heroSubtitle: "A tua nova casa",
-      heroImage: "",
-      heroVideo: "",
-      sectionEvents: "true",
-      sectionGallery: "true",
-      sectionReservations: "true",
-      sectionAbout: "true",
-      sectionContact: "true",
-    };
+    settings = { ...settingsDefaults };
   }
 
   return (
