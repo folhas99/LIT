@@ -72,7 +72,7 @@ export default function Footer({ settings, sections }: FooterProps) {
           {/* Navigation */}
           <div>
             <h4 className="text-white font-semibold mb-4 uppercase text-sm tracking-wider">
-              Navegacao
+              Navegação
             </h4>
             <ul className="space-y-2">
               <li>
@@ -114,7 +114,7 @@ export default function Footer({ settings, sections }: FooterProps) {
           {/* Info */}
           <div>
             <h4 className="text-white font-semibold mb-4 uppercase text-sm tracking-wider">
-              Informacao
+              Informação
             </h4>
             <ul className="space-y-3">
               {settings.address && (

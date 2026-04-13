@@ -30,7 +30,7 @@ export default function EventsPreview({ events }: { events: EventPreview[] }) {
         <div className="flex items-end justify-between mb-12">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-white tracking-wide">
-              Proximos Eventos
+              Próximos Eventos
             </h2>
             <div className="mt-2 w-16 h-0.5 bg-gradient-to-r from-jungle-500 to-neon-green/50" />
           </div>

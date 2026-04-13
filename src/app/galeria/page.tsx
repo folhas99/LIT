@@ -44,7 +44,7 @@ export default async function GaleriaPage() {
           <div className="text-center py-20">
             <Camera size={48} className="mx-auto text-jungle-600 mb-4" />
             <p className="text-gray-400 text-lg">
-              Ainda nao ha galerias publicadas. Volta em breve!
+              Ainda não há galerias publicadas. Volta em breve!
             </p>
           </div>
         )}

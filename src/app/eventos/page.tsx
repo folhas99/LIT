@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Eventos",
-  description: "Proximos eventos e programacao do LIT Coimbra.",
+  description: "Próximos eventos e programação do LIT Coimbra.",
 };
 
 const typeColors: Record<string, string> = {
@@ -52,7 +52,7 @@ export default async function EventosPage() {
         {upcoming.length > 0 && (
           <section className="mb-20">
             <h2 className="text-xl font-semibold text-jungle-400 uppercase tracking-wider mb-8">
-              Proximos Eventos
+              Próximos Eventos
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
               {upcoming.map((event) => (
@@ -108,7 +108,7 @@ export default async function EventosPage() {
           <div className="text-center py-20">
             <Music size={48} className="mx-auto text-jungle-600 mb-4" />
             <p className="text-gray-400 text-lg">
-              De momento nao ha eventos agendados. Volta em breve!
+              De momento não há eventos agendados. Volta em breve!
             </p>
           </div>
         )}
