@@ -34,7 +34,7 @@ export default async function SobrePage() {
       instagram: "https://www.instagram.com/lit.coimbra/",
       facebook: "",
       tiktok: "",
-      schedule: "Quarta a Sabado, 23:00 - 06:00",
+      schedule: "Quarta a Sábado, 23:00 - 06:00",
       heroTitle: "LIT Coimbra",
       heroSubtitle: "A tua nova casa",
       heroImage: "",
@@ -65,12 +65,12 @@ export default async function SobrePage() {
         <section className="mb-16 animate-fade-in-up">
           <div className="max-w-2xl">
             <p className="text-xl text-gray-300 leading-relaxed mb-6">
-              O <strong className="text-white">LIT Coimbra</strong> e o espaco onde a noite ganha vida.
-              Um ambiente unico onde a musica, as pessoas e a energia se encontram para criar noites inesqueciveis.
+              O <strong className="text-white">LIT Coimbra</strong> é o espaço onde a noite ganha vida.
+              Um ambiente único onde a música, as pessoas e a energia se encontram para criar noites inesquecíveis.
             </p>
             <p className="text-gray-400 leading-relaxed">
-              Inspirado pela natureza e pela essencia da vida noturna, o LIT e a tua nova casa
-              em Coimbra. Um espaco decorado com elementos naturais que cria uma atmosfera
+              Inspirado pela natureza e pela essência da vida noturna, o LIT é a tua nova casa
+              em Coimbra. Um espaço decorado com elementos naturais que cria uma atmosfera
               acolhedora e ao mesmo tempo vibrante.
             </p>
           </div>
@@ -84,7 +84,7 @@ export default async function SobrePage() {
                 <div className="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center group-hover:bg-jungle-700 transition-colors duration-300">
                   <MapPin size={18} className="text-jungle-400 group-hover:text-neon-green/70 transition-colors duration-300" />
                 </div>
-                <h3 className="text-white font-semibold">Localizacao</h3>
+                <h3 className="text-white font-semibold">Localização</h3>
               </div>
               <p className="text-gray-400 text-sm">{settings.address}</p>
             </div>
@@ -96,7 +96,7 @@ export default async function SobrePage() {
                 <div className="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center group-hover:bg-jungle-700 transition-colors duration-300">
                   <Clock size={18} className="text-jungle-400 group-hover:text-neon-green/70 transition-colors duration-300" />
                 </div>
-                <h3 className="text-white font-semibold">Horario</h3>
+                <h3 className="text-white font-semibold">Horário</h3>
               </div>
               <p className="text-gray-400 text-sm">{settings.schedule}</p>
             </div>

@@ -40,7 +40,7 @@ export default function ContactForm() {
           <CheckCircle size={48} className="mx-auto text-neon-green/80 mb-4" />
           <p className="text-white font-semibold">Mensagem enviada!</p>
           <p className="text-gray-400 text-sm mt-2">
-            Responderemos assim que possivel.
+            Responderemos assim que possível.
           </p>
           <button
             onClick={() => setStatus("idle")}

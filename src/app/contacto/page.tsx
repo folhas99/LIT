@@ -36,7 +36,7 @@ export default async function ContactoPage() {
       instagram: "https://www.instagram.com/lit.coimbra/",
       facebook: "",
       tiktok: "",
-      schedule: "Quarta a Sabado, 23:00 - 06:00",
+      schedule: "Quarta a Sábado, 23:00 - 06:00",
       heroTitle: "LIT Coimbra",
       heroSubtitle: "A tua nova casa",
       heroImage: "",
@@ -74,7 +74,7 @@ export default async function ContactoPage() {
               Fala connosco
             </h2>
             <p className="text-gray-400 mb-8">
-              Tens alguma questao ou sugestao? Entra em contacto atraves dos seguintes meios.
+              Tens alguma questão ou sugestão? Entra em contacto através dos seguintes meios.
             </p>
 
             <div className="space-y-4">

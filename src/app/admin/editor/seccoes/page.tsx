@@ -104,12 +104,12 @@ const sectionTypeMeta: Record<
   hero: {
     label: "Hero",
     icon: Layout,
-    description: "Banner principal com titulo, subtitulo e CTA",
+    description: "Banner principal com título, subtítulo e CTA",
   },
   text: {
     label: "Texto",
     icon: Type,
-    description: "Bloco de texto com titulo opcional",
+    description: "Bloco de texto com título opcional",
   },
   image_gallery: {
     label: "Galeria de Imagens",
@@ -119,17 +119,17 @@ const sectionTypeMeta: Record<
   cta: {
     label: "Call to Action",
     icon: MousePointerClick,
-    description: "Botao de acao com titulo e descricao",
+    description: "Botão de ação com título e descrição",
   },
   divider: {
     label: "Divisor",
     icon: Minus,
-    description: "Linha divisora entre seccoes",
+    description: "Linha divisora entre secções",
   },
   spacer: {
-    label: "Espacador",
+    label: "Espaçador",
     icon: Space,
-    description: "Espaco vertical entre seccoes",
+    description: "Espaço vertical entre secções",
   },
   embed: {
     label: "Embed",
@@ -144,7 +144,7 @@ const sectionTypeMeta: Record<
   testimonials: {
     label: "Testemunhos",
     icon: MessageSquareQuote,
-    description: "Citacoes de clientes com avaliacao",
+    description: "Citações de clientes com avaliação",
   },
   countdown: {
     label: "Contagem Decrescente",
@@ -236,7 +236,7 @@ export default function SectionBuilderPage() {
       setSections(parsed);
       setHasChanges(false);
     } catch {
-      setError("Erro ao carregar seccoes.");
+      setError("Erro ao carregar secções.");
       setSections([]);
     } finally {
       setLoading(false);
@@ -249,7 +249,7 @@ export default function SectionBuilderPage() {
 
   const handleTabChange = (tab: TabId) => {
     if (hasChanges) {
-      if (!window.confirm("Tens alteracoes por guardar. Queres mudar de pagina?")) return;
+      if (!window.confirm("Tens alterações por guardar. Queres mudar de página?")) return;
     }
     setActiveTab(tab);
   };
@@ -286,19 +286,19 @@ export default function SectionBuilderPage() {
       };
       setSections((prev) => [...prev, parsed]);
     } catch {
-      setError("Erro ao adicionar seccao.");
+      setError("Erro ao adicionar secção.");
     }
   };
 
   const deleteSection = async (id: string) => {
-    if (!window.confirm("Tens a certeza que queres apagar esta seccao?")) return;
+    if (!window.confirm("Tens a certeza que queres apagar esta secção?")) return;
     setError("");
     try {
       const res = await fetch(`/api/sections/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Erro ao apagar");
       setSections((prev) => prev.filter((s) => s.id !== id));
     } catch {
-      setError("Erro ao apagar seccao.");
+      setError("Erro ao apagar secção.");
     }
   };
 
@@ -375,7 +375,7 @@ export default function SectionBuilderPage() {
       setHasChanges(false);
       setTimeout(() => setSaved(false), 3000);
     } catch {
-      setError("Erro ao guardar as alteracoes.");
+      setError("Erro ao guardar as alterações.");
     } finally {
       setSaving(false);
     }
@@ -386,9 +386,9 @@ export default function SectionBuilderPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Construtor de Seccoes</h1>
+          <h1 className="text-2xl font-bold text-white">Construtor de Secções</h1>
           <p className="text-gray-400 text-sm mt-1">
-            Adiciona, reordena e edita as seccoes de cada pagina.
+            Adiciona, reordena e edita as secções de cada página.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -404,7 +404,7 @@ export default function SectionBuilderPage() {
           )}
           {hasChanges && (
             <span className="text-yellow-400 text-xs uppercase tracking-wider">
-              Alteracoes por guardar
+              Alterações por guardar
             </span>
           )}
           <button
@@ -446,8 +446,8 @@ export default function SectionBuilderPage() {
           {sections.length === 0 && (
             <div className="text-center py-16 bg-jungle-900/30 border border-jungle-700/20 rounded-sm">
               <Box size={48} className="mx-auto text-gray-600 mb-4" />
-              <p className="text-gray-400 mb-2">Nenhuma seccao nesta pagina.</p>
-              <p className="text-gray-500 text-sm">Clica em &quot;Adicionar Seccao&quot; para comecar.</p>
+              <p className="text-gray-400 mb-2">Nenhuma secção nesta página.</p>
+              <p className="text-gray-500 text-sm">Clica em &quot;Adicionar Secção&quot; para começar.</p>
             </div>
           )}
 
@@ -474,7 +474,7 @@ export default function SectionBuilderPage() {
             className="w-full py-4 border-2 border-dashed border-jungle-700/50 rounded-sm text-gray-400 hover:text-white hover:border-jungle-500/50 transition-colors flex items-center justify-center gap-2"
           >
             <Plus size={20} />
-            Adicionar Seccao
+            Adicionar Secção
           </button>
         </div>
       )}
@@ -618,7 +618,7 @@ function SectionCard({
               size={14}
               className={cn("transition-transform", section._spacingOpen && "rotate-90")}
             />
-            Espacamento e Fundo
+            Espaçamento e Fundo
           </button>
 
           {section._spacingOpen && (
@@ -665,7 +665,7 @@ function SectionEditor({
     case "countdown":
       return <CountdownEditor content={content} onUpdate={onUpdate} />;
     default:
-      return <p className="text-gray-500 text-sm">Editor nao disponivel para este tipo.</p>;
+      return <p className="text-gray-500 text-sm">Editor não disponível para este tipo.</p>;
   }
 }
 
@@ -797,16 +797,16 @@ function HeroEditor({ content, onUpdate }: EditorProps) {
   return (
     <div className="space-y-4">
       <FieldInput
-        label="Titulo"
+        label="Título"
         value={String(content.title || "")}
         onChange={(v) => onUpdate("title", v)}
-        placeholder="Titulo do hero"
+        placeholder="Título do hero"
       />
       <FieldInput
-        label="Subtitulo"
+        label="Subtítulo"
         value={String(content.subtitle || "")}
         onChange={(v) => onUpdate("subtitle", v)}
-        placeholder="Subtitulo do hero"
+        placeholder="Subtítulo do hero"
       />
       <FieldInput
         label="Imagem de Fundo (URL)"
@@ -816,13 +816,13 @@ function HeroEditor({ content, onUpdate }: EditorProps) {
       />
       <div className="grid grid-cols-2 gap-4">
         <FieldInput
-          label="Texto do Botao CTA"
+          label="Texto do Botão CTA"
           value={String(content.ctaText || "")}
           onChange={(v) => onUpdate("ctaText", v)}
           placeholder="Reservar Mesa"
         />
         <FieldInput
-          label="Link do Botao CTA"
+          label="Link do Botão CTA"
           value={String(content.ctaLink || "")}
           onChange={(v) => onUpdate("ctaLink", v)}
           placeholder="/reservas"
@@ -846,7 +846,7 @@ function TextEditor({ content, onUpdate }: EditorProps) {
   return (
     <div className="space-y-4">
       <FieldInput
-        label="Titulo (opcional)"
+        label="Título (opcional)"
         value={String(content.title || "")}
         onChange={(v) => onUpdate("title", v)}
       />
@@ -891,7 +891,7 @@ function ImageGalleryEditor({ content, onUpdate }: EditorProps) {
   return (
     <div className="space-y-4">
       <FieldInput
-        label="Titulo"
+        label="Título"
         value={String(content.title || "")}
         onChange={(v) => onUpdate("title", v)}
       />
@@ -935,7 +935,7 @@ function ImageGalleryEditor({ content, onUpdate }: EditorProps) {
           ]}
         />
         <FieldSlider
-          label="Espacamento"
+          label="Espaçamento"
           value={Number(content.gap || 4)}
           onChange={(v) => onUpdate("gap", v)}
           min={0}
@@ -953,34 +953,34 @@ function CTAEditor({ content, onUpdate }: EditorProps) {
   return (
     <div className="space-y-4">
       <FieldInput
-        label="Titulo"
+        label="Título"
         value={String(content.title || "")}
         onChange={(v) => onUpdate("title", v)}
       />
       <FieldTextArea
-        label="Descricao"
+        label="Descrição"
         value={String(content.description || "")}
         onChange={(v) => onUpdate("description", v)}
         rows={3}
       />
       <div className="grid grid-cols-2 gap-4">
         <FieldInput
-          label="Texto do Botao"
+          label="Texto do Botão"
           value={String(content.buttonText || "")}
           onChange={(v) => onUpdate("buttonText", v)}
         />
         <FieldInput
-          label="Link do Botao"
+          label="Link do Botão"
           value={String(content.buttonLink || "")}
           onChange={(v) => onUpdate("buttonLink", v)}
         />
       </div>
       <FieldSelect
-        label="Estilo do Botao"
+        label="Estilo do Botão"
         value={String(content.buttonStyle || "primary")}
         onChange={(v) => onUpdate("buttonStyle", v)}
         options={[
-          { value: "primary", label: "Primario" },
+          { value: "primary", label: "Primário" },
           { value: "outline", label: "Contorno" },
           { value: "neon", label: "Neon" },
         ]}
@@ -1102,7 +1102,7 @@ function ColumnsEditor({ content, onUpdate }: EditorProps) {
   return (
     <div className="space-y-4">
       <FieldSelect
-        label="Numero de Colunas"
+        label="Número de Colunas"
         value={String(count)}
         onChange={(v) => updateColumnCount(Number(v))}
         options={[
@@ -1121,7 +1121,7 @@ function ColumnsEditor({ content, onUpdate }: EditorProps) {
               Coluna {idx + 1}
             </p>
             <FieldInput
-              label="Titulo"
+              label="Título"
               value={item.title || ""}
               onChange={(v) => updateItem(idx, "title", v)}
             />
@@ -1198,7 +1198,7 @@ function TestimonialsEditor({ content, onUpdate }: EditorProps) {
             rows={3}
           />
           <FieldSelect
-            label="Avaliacao"
+            label="Avaliação"
             value={String(item.rating || 5)}
             onChange={(v) => updateItem(idx, "rating", Number(v))}
             options={[
@@ -1227,12 +1227,12 @@ function CountdownEditor({ content, onUpdate }: EditorProps) {
   return (
     <div className="space-y-4">
       <FieldInput
-        label="Titulo"
+        label="Título"
         value={String(content.title || "")}
         onChange={(v) => onUpdate("title", v)}
       />
       <FieldTextArea
-        label="Descricao"
+        label="Descrição"
         value={String(content.description || "")}
         onChange={(v) => onUpdate("description", v)}
         rows={3}
@@ -1289,7 +1289,7 @@ function SpacingEditor({
                       {spacing.paddingLeft}
                     </div>
                     <div className="flex-1 bg-jungle-700/30 rounded-sm px-3 py-2 text-center text-[10px] text-gray-500 min-w-[60px]">
-                      Conteudo
+                      Conteúdo
                     </div>
                     <div className="text-[10px] text-green-500/50 px-1">
                       {spacing.paddingRight}
@@ -1372,7 +1372,7 @@ function SpacingEditor({
         </p>
         <div className="grid grid-cols-2 gap-4">
           <FieldSelect
-            label="Largura Maxima"
+            label="Largura Máxima"
             value={spacing.maxWidth}
             onChange={(v) => onUpdate("maxWidth", v)}
             options={[
@@ -1464,7 +1464,7 @@ function AddSectionModal({
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
       <div className="bg-jungle-900 border border-jungle-700/50 rounded-sm w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-jungle-700/30">
-          <h2 className="text-lg font-semibold text-white">Adicionar Seccao</h2>
+          <h2 className="text-lg font-semibold text-white">Adicionar Secção</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-white transition-colors"

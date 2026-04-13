@@ -384,7 +384,7 @@ export default function ThemeEditorPage() {
       <div className="xl:w-96 flex-shrink-0">
         <div className="xl:sticky xl:top-4">
           <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-            Pre-visualizacao
+            Pré-visualização
           </h2>
           <div
             className="rounded-sm border border-jungle-700/30 overflow-hidden"

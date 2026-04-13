@@ -58,7 +58,7 @@ export default function BrandingPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Branding & Icones</h1>
+        <h1 className="text-2xl font-bold text-white">Branding & Ícones</h1>
         <p className="text-gray-400 text-sm mt-1">
           Personaliza o favicon, logo e identidade visual do site.
         </p>
@@ -83,7 +83,7 @@ export default function BrandingPage() {
             <h2 className="text-lg font-semibold text-white">Favicon</h2>
           </div>
           <p className="text-gray-400 text-sm mb-4">
-            O icone que aparece no separador do browser. Recomendado: 32x32px ou 64x64px.
+            O ícone que aparece no separador do browser. Recomendado: 32x32px ou 64x64px.
           </p>
 
           {favicon && (
@@ -129,7 +129,7 @@ export default function BrandingPage() {
             <h2 className="text-lg font-semibold text-white">Logo</h2>
           </div>
           <p className="text-gray-400 text-sm mb-4">
-            O logo principal do site. Aparece no header e outras areas. Recomendado: PNG ou SVG transparente.
+            O logo principal do site. Aparece no header e outras áreas. Recomendado: PNG ou SVG transparente.
           </p>
 
           {logo && (
@@ -171,7 +171,7 @@ export default function BrandingPage() {
 
       {/* Preview */}
       <div className="mt-8 p-6 bg-jungle-900/50 border border-jungle-700/30 rounded-sm">
-        <h2 className="text-lg font-semibold text-white mb-4">Pre-visualizacao</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">Pré-visualização</h2>
         <div className="flex items-center gap-6">
           <div className="text-center">
             <div className="w-8 h-8 bg-jungle-800 rounded-sm flex items-center justify-center overflow-hidden mx-auto mb-2">

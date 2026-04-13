@@ -88,14 +88,14 @@ export default function ReservasPage() {
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-2">
             <Crown size={20} className="text-accent-gold" />
-            <span className="text-xs uppercase tracking-widest vip-badge font-bold">Experiencia VIP</span>
+            <span className="text-xs uppercase tracking-widest vip-badge font-bold">Experiência VIP</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white tracking-wide animate-fade-in">
             Reservas VIP
           </h1>
           <div className="mt-3 w-20 h-0.5 bg-gradient-to-r from-accent-gold/80 to-accent-gold/20" />
           <p className="mt-4 text-gray-400 text-lg">
-            Reserva a tua mesa e garante uma experiencia exclusiva.
+            Reserva a tua mesa e garante uma experiência exclusiva.
           </p>
         </div>
 
@@ -165,7 +165,7 @@ export default function ReservasPage() {
             </div>
             <div>
               <label htmlFor="guests" className="block text-sm text-gray-300 mb-2">
-                N de Pessoas *
+                N.º de Pessoas *
               </label>
               <input
                 id="guests"
@@ -192,7 +192,7 @@ export default function ReservasPage() {
                 onChange={(e) => setForm({ ...form, eventId: e.target.value })}
                 className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white focus:outline-none focus:border-jungle-500 form-input-premium"
               >
-                <option value="">Sem evento especifico</option>
+                <option value="">Sem evento específico</option>
                 {events.map((ev) => (
                   <option key={ev.id} value={ev.id}>
                     {ev.title}
@@ -213,7 +213,7 @@ export default function ReservasPage() {
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
               className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white placeholder-gray-500 focus:outline-none focus:border-jungle-500 form-input-premium resize-none"
-              placeholder="Pedidos especiais, celebracoes..."
+              placeholder="Pedidos especiais, celebrações..."
             />
           </div>
 
