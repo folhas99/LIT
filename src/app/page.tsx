@@ -2,6 +2,8 @@ import Hero from "@/components/home/Hero";
 import EventsPreview from "@/components/home/EventsPreview";
 import GalleryPreview from "@/components/home/GalleryPreview";
 import ContactCTA from "@/components/home/ContactCTA";
+import SectionRenderer from "@/components/sections/SectionRenderer";
+import { LocalBusinessJsonLd, WebsiteJsonLd } from "@/components/SEO";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { getSettings, isSectionEnabled, defaults as settingsDefaults } from "@/lib/settings";
@@ -12,6 +14,7 @@ export default async function HomePage() {
   let settings;
   let events: { id: string; title: string; slug: string; date: Date; image: string | null; eventType: string | null }[] = [];
   let galleries: { id: string; title: string; slug: string; coverImage: string | null; date: Date }[] = [];
+  let sections: { id: string; page: string; type: string; content: string; order: number; visible: boolean; spacing: string | null }[] = [];
 
   try {
     settings = await getSettings();
@@ -33,12 +36,29 @@ export default async function HomePage() {
         select: { id: true, title: true, slug: true, coverImage: true, date: true },
       });
     }
+
+    // Fetch custom sections for homepage
+    try {
+      sections = await prisma.pageSection.findMany({
+        where: { page: "homepage", visible: true },
+        orderBy: { order: "asc" },
+      });
+    } catch {
+      // PageSection table might not exist yet
+    }
   } catch {
     settings = { ...settingsDefaults };
   }
 
+  // Separate sections by position: before hero (order < 0), between content (0-99), after content (100+)
+  const beforeHero = sections.filter((s) => s.order < 0);
+  const middleSections = sections.filter((s) => s.order >= 0 && s.order < 100);
+  const afterContent = sections.filter((s) => s.order >= 100);
+
   return (
     <>
+      {beforeHero.length > 0 && <SectionRenderer sections={beforeHero} />}
+
       <Hero
         title={settings.heroTitle}
         subtitle={settings.heroSubtitle}
@@ -46,6 +66,8 @@ export default async function HomePage() {
         heroVideo={settings.heroVideo}
         showReservations={isSectionEnabled(settings, "sectionReservations")}
       />
+
+      {middleSections.length > 0 && <SectionRenderer sections={middleSections} />}
 
       {isSectionEnabled(settings, "sectionEvents") && events.length > 0 && (
         <EventsPreview events={events} />
@@ -62,6 +84,25 @@ export default async function HomePage() {
           facebook={settings.facebook}
         />
       )}
+
+      {afterContent.length > 0 && <SectionRenderer sections={afterContent} />}
+
+      <LocalBusinessJsonLd
+        name={settings.siteName}
+        description={settings.siteDescription}
+        address={settings.address}
+        phone={settings.phone}
+        email={settings.email}
+        url={process.env.NEXTAUTH_URL || "http://localhost:2999"}
+        schedule={settings.schedule}
+        instagram={settings.instagram}
+        facebook={settings.facebook}
+      />
+      <WebsiteJsonLd
+        name={settings.siteName}
+        url={process.env.NEXTAUTH_URL || "http://localhost:2999"}
+        description={settings.siteDescription}
+      />
     </>
   );
 }

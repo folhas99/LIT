@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import ThemeProvider from "@/components/ThemeProvider";
 import { getSettings, isSectionEnabled, defaults as settingsDefaults } from "@/lib/settings";
 
 const inter = Inter({
@@ -14,11 +15,13 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   let siteName = "LIT Coimbra";
   let siteDescription = "A tua nova casa! Discoteca em Coimbra.";
+  let faviconUrl = "";
 
   try {
     const settings = await getSettings();
     siteName = settings.siteName;
     siteDescription = settings.siteDescription;
+    faviconUrl = settings.faviconUrl || "";
   } catch {
     // DB not available yet, use defaults
   }
@@ -30,6 +33,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: siteDescription,
     metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+    icons: {
+      icon: faviconUrl || "/favicon.ico",
+      apple: faviconUrl || "/apple-touch-icon.png",
+    },
     openGraph: {
       title: siteName,
       description: siteDescription,
@@ -85,6 +92,7 @@ export default async function RootLayout({
   return (
     <html lang="pt-PT" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
+        {!isAdmin && <ThemeProvider />}
         {!isAdmin && <Header sections={sections} />}
         <main className={!isAdmin ? "flex-1 pt-16 md:pt-20" : "flex-1"}>
           {children}

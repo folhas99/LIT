@@ -18,6 +18,9 @@ import {
   FileEdit,
   ImageIcon,
   Palette,
+  MessageSquare,
+  LayoutList,
+  Globe,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -27,11 +30,14 @@ const navItems = [
   { label: "Eventos", href: "/admin/eventos", icon: CalendarDays },
   { label: "Galeria", href: "/admin/galeria", icon: Camera },
   { label: "Reservas", href: "/admin/reservas", icon: BookOpen },
+  { label: "Mensagens", href: "/admin/mensagens", icon: MessageSquare },
   { label: "Utilizadores", href: "/admin/utilizadores", icon: Users },
   { label: "Editor Visual", href: "/admin/editor", icon: Palette },
+  { label: "Secções", href: "/admin/editor/seccoes", icon: LayoutList },
   { label: "Media", href: "/admin/editor/media", icon: ImageIcon },
-  { label: "Editor P\u00e1ginas", href: "/admin/editor/paginas", icon: FileEdit },
-  { label: "Defini\u00e7\u00f5es", href: "/admin/definicoes", icon: Settings },
+  { label: "Branding", href: "/admin/editor/branding", icon: Globe },
+  { label: "Editor Páginas", href: "/admin/editor/paginas", icon: FileEdit },
+  { label: "Definições", href: "/admin/definicoes", icon: Settings },
   { label: "Logs", href: "/admin/logs", icon: ScrollText },
 ];
 
@@ -87,23 +93,66 @@ export default function Sidebar() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm transition-colors",
-                isActive(item.href)
-                  ? "bg-jungle-800 text-white"
-                  : "text-gray-400 hover:text-white hover:bg-jungle-800/50"
-              )}
-            >
-              <item.icon size={18} />
-              {item.label}
-            </Link>
-          ))}
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <div className="space-y-1">
+            <p className="px-3 py-1.5 text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Conteúdo</p>
+            {navItems.slice(0, 6).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm transition-colors",
+                  isActive(item.href)
+                    ? "bg-jungle-800 text-white"
+                    : "text-gray-400 hover:text-white hover:bg-jungle-800/50"
+                )}
+              >
+                <item.icon size={18} />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className="my-3 border-t border-jungle-700/20" />
+          <div className="space-y-1">
+            <p className="px-3 py-1.5 text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Aparência</p>
+            {navItems.slice(6, 11).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm transition-colors",
+                  isActive(item.href)
+                    ? "bg-jungle-800 text-white"
+                    : "text-gray-400 hover:text-white hover:bg-jungle-800/50"
+                )}
+              >
+                <item.icon size={18} />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className="my-3 border-t border-jungle-700/20" />
+          <div className="space-y-1">
+            <p className="px-3 py-1.5 text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Sistema</p>
+            {navItems.slice(11).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm transition-colors",
+                  isActive(item.href)
+                    ? "bg-jungle-800 text-white"
+                    : "text-gray-400 hover:text-white hover:bg-jungle-800/50"
+                )}
+              >
+                <item.icon size={18} />
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </nav>
 
         {/* Bottom */}

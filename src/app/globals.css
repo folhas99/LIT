@@ -426,3 +426,34 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ============================================
+   DYNAMIC THEME VARIABLES
+   ============================================ */
+
+:root {
+  --theme-primary: #4a7c59;
+  --theme-accent: #39FF14;
+  --theme-accent-purple: #a855f7;
+  --theme-accent-pink: #e84393;
+  --theme-accent-blue: #0984e3;
+  --theme-accent-gold: #d4a017;
+  --theme-bg: #0a1f0f;
+  --theme-surface: #0f2d16;
+  --theme-text: #ffffff;
+  --theme-text-muted: #9ca3af;
+  --theme-font-heading: "Inter", sans-serif;
+  --theme-font-body: "Inter", sans-serif;
+}
+
+/* Disable animations when toggled off */
+.no-animations * {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+}
+
+/* Hide particles when toggled off */
+.no-particles .particles-container {
+  display: none !important;
+}

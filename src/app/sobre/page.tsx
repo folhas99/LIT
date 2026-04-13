@@ -1,6 +1,8 @@
 import { MapPin, Clock, Mail, Phone } from "lucide-react";
 import { getSettings } from "@/lib/settings";
 import { logError } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
+import SectionRenderer from "@/components/sections/SectionRenderer";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +14,15 @@ export const metadata: Metadata = {
 
 export default async function SobrePage() {
   let settings;
+  let sections: { id: string; page: string; type: string; content: string; order: number; visible: boolean; spacing: string | null }[] = [];
   try {
     settings = await getSettings();
+    try {
+      sections = await prisma.pageSection.findMany({
+        where: { page: "sobre", visible: true },
+        orderBy: { order: "asc" },
+      });
+    } catch { /* table might not exist */ }
   } catch (error) {
     logError("sobre/page", error);
     settings = {
@@ -38,8 +47,12 @@ export default async function SobrePage() {
     };
   }
 
+  const beforeSections = sections.filter((s) => s.order < 0);
+  const afterSections = sections.filter((s) => s.order >= 0);
+
   return (
     <div className="min-h-screen py-12 md:py-20 px-4">
+      {beforeSections.length > 0 && <SectionRenderer sections={beforeSections} />}
       <div className="max-w-4xl mx-auto">
         <div className="mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white tracking-wide animate-fade-in">
@@ -117,6 +130,8 @@ export default async function SobrePage() {
             </div>
           )}
         </section>
+
+        {afterSections.length > 0 && <SectionRenderer sections={afterSections} />}
       </div>
     </div>
   );

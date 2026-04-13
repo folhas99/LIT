@@ -2,6 +2,8 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { InstagramIcon, FacebookIcon } from "@/components/ui/SocialIcons";
 import { getSettings } from "@/lib/settings";
 import { logError } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
+import SectionRenderer from "@/components/sections/SectionRenderer";
 import ContactForm from "./ContactForm";
 import type { Metadata } from "next";
 
@@ -14,8 +16,15 @@ export const metadata: Metadata = {
 
 export default async function ContactoPage() {
   let settings;
+  let sections: { id: string; page: string; type: string; content: string; order: number; visible: boolean; spacing: string | null }[] = [];
   try {
     settings = await getSettings();
+    try {
+      sections = await prisma.pageSection.findMany({
+        where: { page: "contacto", visible: true },
+        orderBy: { order: "asc" },
+      });
+    } catch { /* table might not exist */ }
   } catch (error) {
     logError("contacto/page", error);
     settings = {
@@ -40,8 +49,12 @@ export default async function ContactoPage() {
     };
   }
 
+  const beforeSections = sections.filter((s) => s.order < 0);
+  const afterSections = sections.filter((s) => s.order >= 0);
+
   return (
     <div className="min-h-screen py-12 md:py-20 px-4 relative">
+      {beforeSections.length > 0 && <SectionRenderer sections={beforeSections} />}
       {/* Background accents */}
       <div className="absolute top-40 left-0 w-64 h-64 bg-accent-purple/3 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-40 right-0 w-48 h-48 bg-neon-green/3 rounded-full blur-[80px] pointer-events-none" />
@@ -127,6 +140,8 @@ export default async function ContactoPage() {
             <ContactForm />
           </div>
         </div>
+
+        {afterSections.length > 0 && <SectionRenderer sections={afterSections} />}
       </div>
     </div>
   );

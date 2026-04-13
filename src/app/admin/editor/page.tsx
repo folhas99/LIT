@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Palette, FileText, Image, ArrowRight } from "lucide-react";
+import { Palette, FileText, Image, ArrowRight, LayoutList, Globe } from "lucide-react";
 
 const editorCards = [
   {
@@ -12,18 +12,32 @@ const editorCards = [
       "Personaliza as cores, tipografia e efeitos visuais do site.",
   },
   {
+    href: "/admin/editor/seccoes",
+    icon: LayoutList,
+    title: "Secções das Páginas",
+    description:
+      "Adiciona, reordena e personaliza secções como no Elementor. Texto, galerias, CTAs e mais.",
+  },
+  {
     href: "/admin/editor/paginas",
     icon: FileText,
-    title: "Conteudo das Paginas",
+    title: "Conteúdo das Páginas",
     description:
-      "Edita o conteudo de texto e imagens de cada pagina do site.",
+      "Edita o conteúdo de texto e imagens de cada página do site.",
   },
   {
     href: "/admin/editor/media",
     icon: Image,
     title: "Biblioteca de Media",
     description:
-      "Gere imagens, videos e outros ficheiros multimidia do site.",
+      "Gere imagens, vídeos e outros ficheiros multimédia do site.",
+  },
+  {
+    href: "/admin/editor/branding",
+    icon: Globe,
+    title: "Branding & Ícones",
+    description:
+      "Personaliza o favicon, logo e identidade visual do site.",
   },
 ];
 
@@ -32,7 +46,7 @@ export default function EditorHubPage() {
     <div>
       <h1 className="text-2xl font-bold text-white mb-2">Editor Visual</h1>
       <p className="text-gray-400 mb-8">
-        Ferramentas para personalizar a aparencia e conteudo do site.
+        Ferramentas para personalizar a aparência e conteúdo do site.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

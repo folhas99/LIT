@@ -6,6 +6,8 @@ import { pt } from "date-fns/locale/pt";
 import { ArrowLeft, Calendar, Clock, Music, Camera } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
+import { EventJsonLd } from "@/components/SEO";
+import { getSetting } from "@/lib/settings";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -138,6 +140,19 @@ export default async function EventoPage({
           </Link>
         </div>
       </div>
+
+      <EventJsonLd
+        name={event.title}
+        description={event.description?.slice(0, 300) || undefined}
+        startDate={new Date(event.date).toISOString()}
+        endDate={event.endDate ? new Date(event.endDate).toISOString() : undefined}
+        image={event.image || undefined}
+        url={`${process.env.NEXTAUTH_URL || "http://localhost:2999"}/eventos/${event.slug}`}
+        location={{
+          name: "LIT Coimbra",
+          address: "Coimbra, Portugal",
+        }}
+      />
     </div>
   );
 }

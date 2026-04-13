@@ -47,6 +47,8 @@ export type SiteSettings = {
   contentEventsTitle: string;
   contentGaleriaTitle: string;
   contentFooterText: string;
+  faviconUrl: string;
+  logoUrl: string;
 };
 
 export const defaults: SiteSettings = {
@@ -96,6 +98,8 @@ export const defaults: SiteSettings = {
   contentEventsTitle: "Eventos",
   contentGaleriaTitle: "Galeria",
   contentFooterText: "A tua nova casa em Coimbra.",
+  faviconUrl: "",
+  logoUrl: "",
 };
 
 export async function getSettings(): Promise<SiteSettings> {
