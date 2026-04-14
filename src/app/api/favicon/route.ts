@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, readdir, unlink } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import { setSetting, getSetting } from "@/lib/settings";
@@ -36,11 +36,28 @@ export async function POST(request: NextRequest) {
     }
 
     const ext = path.extname(file.name).toLowerCase();
-    const filename = type === "favicon" ? `favicon${ext}` : `logo${ext}`;
+    const prefix = type === "favicon" ? "favicon" : "logo";
+    // Unique timestamped filename so the URL changes on every upload, which
+    // busts the browser / service-worker cache-first caches.
+    const stamp = Date.now().toString(36);
+    const filename = `${prefix}-${stamp}${ext}`;
     const filepath = path.join(uploadsDir, filename);
 
     const bytes = await file.arrayBuffer();
     await writeFile(filepath, Buffer.from(bytes));
+
+    // Best-effort cleanup of previous favicon/logo files so uploads/ doesn't grow.
+    try {
+      const entries = await readdir(uploadsDir);
+      const stale = entries.filter(
+        (name) => name !== filename && name.startsWith(`${prefix}-`) && /\.(ico|png|jpe?g|svg|webp)$/i.test(name)
+      );
+      await Promise.all(
+        stale.map((name) => unlink(path.join(uploadsDir, name)).catch(() => {}))
+      );
+    } catch {
+      // ignore cleanup errors
+    }
 
     const url = `/uploads/${filename}`;
 

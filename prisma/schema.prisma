@@ -33,31 +33,42 @@ model Event {
   eventType   String?
   featured    Boolean   @default(false)
   published   Boolean   @default(true)
+  publishAt   DateTime?
   gallery     Gallery?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([date])
+  @@index([published, date])
+  @@index([featured, date])
 }
 
 model Gallery {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   title      String
-  slug       String   @unique
-  eventId    String?  @unique
-  event      Event?   @relation(fields: [eventId], references: [id])
+  slug       String    @unique
+  eventId    String?   @unique
+  event      Event?    @relation(fields: [eventId], references: [id])
   coverImage String?
   photos     Photo[]
   date       DateTime
-  published  Boolean  @default(true)
-  createdAt  DateTime @default(now())
+  published  Boolean   @default(true)
+  publishAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([published, date])
 }
 
 model Photo {
-  id        String  @id @default(cuid())
-  url       String
-  alt       String?
-  order     Int     @default(0)
-  galleryId String
-  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  id          String  @id @default(cuid())
+  url         String
+  alt         String?
+  order       Int     @default(0)
+  galleryId   String
+  gallery     Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  blurDataUrl String? @db.Text
+
+  @@index([galleryId, order])
 }
 
 model Reservation {
@@ -87,15 +98,16 @@ model SiteSetting {
 }
 
 model PageSection {
-  id         String   @id @default(cuid())
-  page       String   // "homepage", "sobre", "contacto", "reservas", "eventos", "galeria"
-  type       String   // "hero", "text", "gallery_grid", "cta", "divider", "spacer", "embed", "columns", "testimonials", "countdown"
-  content    String   @db.Text // JSON stringified content
-  order      Int      @default(0)
-  visible    Boolean  @default(true)
-  spacing    String?  @db.Text // JSON: { marginTop, marginBottom, paddingTop, paddingRight, paddingBottom, paddingLeft, maxWidth, bgColor, bgGradient, bgImage, borderRadius }
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String    @id @default(cuid())
+  page       String
+  type       String
+  content    String    @db.Text
+  order      Int       @default(0)
+  visible    Boolean   @default(true)
+  spacing    String?   @db.Text
+  publishAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([page, order])
 }
@@ -109,4 +121,31 @@ model ContactMessage {
   message   String   @db.Text
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
+}
+
+model PageMeta {
+  id              String   @id @default(cuid())
+  page            String   @unique
+  title           String?
+  description     String?  @db.Text
+  ogImage         String?
+  noIndex         Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userName  String?
+  action    String   // "create", "update", "delete", "publish", "unpublish", "login"
+  entity    String   // "event", "gallery", "photo", "reservation", "message", "section", "settings", "user"
+  entityId  String?
+  details   String?  @db.Text  // JSON
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity, entityId])
 }

@@ -7,18 +7,41 @@ import ImageUploader from "@/components/admin/ImageUploader";
 
 type Settings = Record<string, string>;
 
+type PageMetaRow = {
+  title: string;
+  description: string;
+  ogImage: string;
+  noIndex: boolean;
+};
+type PageMetaMap = Record<string, PageMetaRow>;
+
+const SEO_PAGES = [
+  { id: "homepage", label: "Homepage" },
+  { id: "eventos", label: "Eventos" },
+  { id: "galeria", label: "Galeria" },
+  { id: "sobre", label: "Sobre" },
+  { id: "contacto", label: "Contacto" },
+  { id: "reservas", label: "Reservas" },
+] as const;
+
+function emptyMeta(): PageMetaRow {
+  return { title: "", description: "", ogImage: "", noIndex: false };
+}
+
 const tabs = [
   { id: "homepage", label: "Homepage" },
   { id: "sobre", label: "Sobre" },
   { id: "contacto", label: "Contacto" },
   { id: "reservas", label: "Reservas" },
   { id: "rodape", label: "Rodapé" },
+  { id: "seo", label: "SEO" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
 
 export default function EditorPaginasPage() {
   const [settings, setSettings] = useState<Settings>({});
+  const [pageMeta, setPageMeta] = useState<PageMetaMap>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -26,10 +49,13 @@ export default function EditorPaginasPage() {
   const [activeTab, setActiveTab] = useState<TabId>("homepage");
 
   useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((data) => {
-        setSettings(data);
+    Promise.all([
+      fetch("/api/settings").then((r) => r.json()),
+      fetch("/api/page-meta").then((r) => r.json()).catch(() => ({})),
+    ])
+      .then(([settingsData, metaData]) => {
+        setSettings(settingsData);
+        setPageMeta(metaData || {});
         setLoading(false);
       })
       .catch(() => {
@@ -37,6 +63,13 @@ export default function EditorPaginasPage() {
         setLoading(false);
       });
   }, []);
+
+  const updateMeta = (page: string, key: keyof PageMetaRow, value: string | boolean) => {
+    setPageMeta((prev) => ({
+      ...prev,
+      [page]: { ...(prev[page] || emptyMeta()), [key]: value },
+    }));
+  };
 
   const update = (key: string, value: string) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
@@ -48,16 +81,25 @@ export default function EditorPaginasPage() {
     setError("");
 
     try {
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      });
+      const [settingsRes, metaRes] = await Promise.all([
+        fetch("/api/settings", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(settings),
+        }),
+        fetch("/api/page-meta", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(pageMeta),
+        }),
+      ]);
 
-      if (!res.ok) throw new Error("Erro ao guardar");
+      if (!settingsRes.ok || !metaRes.ok) throw new Error("Erro ao guardar");
 
-      const data = await res.json();
+      const data = await settingsRes.json();
+      const meta = await metaRes.json();
       setSettings(data);
+      setPageMeta(meta || {});
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch {
@@ -134,7 +176,116 @@ export default function EditorPaginasPage() {
         {activeTab === "rodape" && (
           <RodapeTab settings={settings} update={update} />
         )}
+        {activeTab === "seo" && (
+          <SeoTab pageMeta={pageMeta} updateMeta={updateMeta} />
+        )}
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Tab: SEO                                                            */
+/* ------------------------------------------------------------------ */
+
+function SeoTab({
+  pageMeta,
+  updateMeta,
+}: {
+  pageMeta: PageMetaMap;
+  updateMeta: (page: string, key: keyof PageMetaRow, value: string | boolean) => void;
+}) {
+  const [selected, setSelected] = useState<string>(SEO_PAGES[0].id);
+  const data = pageMeta[selected] || emptyMeta();
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-white mb-2">SEO por Página</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Personaliza o título, descrição e imagem de partilha (Open Graph) de cada página.
+          Estes campos são os que aparecem no Google e nas redes sociais.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {SEO_PAGES.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => setSelected(p.id)}
+            className={cn(
+              "px-4 py-2 text-sm rounded-sm border transition-colors",
+              selected === p.id
+                ? "bg-jungle-600 border-jungle-500 text-white"
+                : "bg-jungle-900 border-jungle-700/50 text-gray-400 hover:text-white hover:border-jungle-600"
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-4 bg-jungle-900/30 border border-jungle-700/20 p-5 rounded-sm">
+        <TextField
+          label="Meta Title"
+          value={data.title}
+          onChange={(v) => updateMeta(selected, "title", v)}
+          placeholder="Deixa vazio para usar o padrão"
+        />
+        <div>
+          <label className="block text-sm text-gray-300 mb-1.5">
+            Meta Description
+            <span className="text-gray-500 ml-2 text-xs">
+              ({data.description.length}/160 caracteres)
+            </span>
+          </label>
+          <textarea
+            value={data.description}
+            onChange={(e) => updateMeta(selected, "description", e.target.value)}
+            rows={3}
+            maxLength={300}
+            placeholder="Descrição que aparece no Google e redes sociais"
+            className="w-full px-4 py-2.5 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white text-sm focus:outline-none focus:border-jungle-500 transition-colors resize-none"
+          />
+        </div>
+        <TextField
+          label="Imagem Open Graph (URL)"
+          value={data.ogImage}
+          onChange={(v) => updateMeta(selected, "ogImage", v)}
+          placeholder="https://litcoimbra.pt/uploads/og-image.jpg"
+        />
+        <label className="flex items-center gap-3 cursor-pointer text-sm text-gray-300">
+          <input
+            type="checkbox"
+            checked={data.noIndex}
+            onChange={(e) => updateMeta(selected, "noIndex", e.target.checked)}
+            className="w-4 h-4 accent-jungle-500"
+          />
+          Não indexar esta página (noindex)
+        </label>
+      </div>
+
+      {data.ogImage && (
+        <LivePreview label="Pré-visualização Open Graph">
+          <div className="max-w-md border border-jungle-700/40 rounded-sm overflow-hidden bg-jungle-900">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={data.ogImage}
+              alt=""
+              className="w-full aspect-[1.91/1] object-cover"
+            />
+            <div className="p-3">
+              <p className="text-xs text-gray-500 uppercase">litcoimbra.pt</p>
+              <p className="text-sm text-white font-semibold truncate">
+                {data.title || "Título da página"}
+              </p>
+              <p className="text-xs text-gray-400 line-clamp-2">
+                {data.description || "Descrição da página"}
+              </p>
+            </div>
+          </div>
+        </LivePreview>
+      )}
     </div>
   );
 }

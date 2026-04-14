@@ -3,6 +3,7 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import { ArrowRight } from "lucide-react";
+import Reveal from "@/components/ui/Reveal";
 
 type GalleryPreview = {
   id: string;
@@ -37,12 +38,12 @@ export default function GalleryPreview({
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 stagger-children">
-          {galleries.map((gallery) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          {galleries.map((gallery, i) => (
+            <Reveal key={gallery.id} delay={i * 70}>
             <Link
-              key={gallery.id}
               href={`/galeria/${gallery.slug}`}
-              className="group relative aspect-square overflow-hidden rounded-sm bg-jungle-800 card-shine card-glow"
+              className="group relative aspect-square overflow-hidden rounded-sm bg-jungle-800 card-shine card-glow block"
             >
               {gallery.coverImage ? (
                 <Image
@@ -70,6 +71,7 @@ export default function GalleryPreview({
                 </div>
               </div>
             </Link>
+            </Reveal>
           ))}
         </div>
 

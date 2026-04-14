@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin, Clock } from "lucide-react";
 import { InstagramIcon, FacebookIcon } from "@/components/ui/SocialIcons";
+import OpeningHoursBadge from "@/components/ui/OpeningHoursBadge";
 
 type FooterProps = {
   settings: {
@@ -11,6 +12,7 @@ type FooterProps = {
     instagram: string;
     facebook: string;
     schedule: string;
+    scheduleHours?: string;
   };
   sections: {
     events: boolean;
@@ -127,6 +129,11 @@ export default function Footer({ settings, sections }: FooterProps) {
                 <li className="flex items-start gap-2 text-gray-400 text-sm">
                   <Clock size={16} className="mt-0.5 shrink-0 text-jungle-500" />
                   <span>{settings.schedule}</span>
+                </li>
+              )}
+              {settings.scheduleHours && (
+                <li className="pt-1">
+                  <OpeningHoursBadge scheduleJson={settings.scheduleHours} />
                 </li>
               )}
               {settings.email && (

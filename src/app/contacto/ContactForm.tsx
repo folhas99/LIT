@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 export default function ContactForm() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", message: "", website: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -26,7 +26,7 @@ export default function ContactForm() {
       }
 
       setStatus("sent");
-      setForm({ name: "", email: "", message: "" });
+      setForm({ name: "", email: "", message: "", website: "" });
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Erro ao enviar mensagem. Tenta novamente.");
@@ -55,6 +55,17 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Honeypot — hidden from real users, bots will fill it */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        value={form.website}
+        onChange={(e) => setForm({ ...form, website: e.target.value })}
+        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+        aria-hidden="true"
+      />
       {status === "error" && (
         <div className="flex items-center gap-2 px-4 py-3 bg-red-900/30 border border-red-700/30 rounded-sm text-red-400 text-sm">
           <AlertCircle size={16} />

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale/pt";
 import { ArrowRight, Calendar } from "lucide-react";
+import Reveal from "@/components/ui/Reveal";
 
 type EventPreview = {
   id: string;
@@ -42,10 +43,10 @@ export default function EventsPreview({ events }: { events: EventPreview[] }) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
-          {events.map((event) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {events.map((event, i) => (
+            <Reveal key={event.id} delay={i * 80} className="block">
             <Link
-              key={event.id}
               href={`/eventos/${event.slug}`}
               className="group block"
             >
@@ -88,6 +89,7 @@ export default function EventsPreview({ events }: { events: EventPreview[] }) {
                 </div>
               </div>
             </Link>
+            </Reveal>
           ))}
         </div>
 

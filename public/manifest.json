@@ -1,0 +1,26 @@
+{
+  "name": "LIT Coimbra",
+  "short_name": "LIT",
+  "description": "A tua nova casa! Discoteca em Coimbra.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1f0f",
+  "theme_color": "#0a1f0f",
+  "lang": "pt-PT",
+  "categories": ["entertainment", "lifestyle", "music"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

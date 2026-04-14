@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, X, Trash2, Clock } from "lucide-react";
+import { Check, X, Trash2, Clock, Download } from "lucide-react";
+import { toast } from "sonner";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 type Reservation = {
   id: string;
@@ -42,38 +44,74 @@ export default function AdminReservasPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
+    toast.success(`Reserva ${status === "CONFIRMED" ? "confirmada" : status === "REJECTED" ? "rejeitada" : "atualizada"}`);
     fetchReservations();
   };
 
   const deleteReservation = async (id: string) => {
     if (!confirm("Eliminar esta reserva?")) return;
     await fetch(`/api/reservations/${id}`, { method: "DELETE" });
+    toast.success("Reserva eliminada");
     fetchReservations();
+  };
+
+  const exportCsv = () => {
+    const rows = reservations.map((r) => [
+      r.name,
+      r.email,
+      r.phone,
+      new Date(r.date).toISOString(),
+      String(r.guests),
+      r.message || "",
+      r.status,
+      new Date(r.createdAt).toISOString(),
+    ]);
+    const header = ["Nome", "Email", "Telefone", "Data", "Pessoas", "Mensagem", "Estado", "Criada em"];
+    const csv = [header, ...rows]
+      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""').replace(/[\r\n]+/g, " ")}"`).join(","))
+      .join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `reservas-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 gap-3 flex-wrap">
         <h1 className="text-2xl font-bold text-white">Reservas</h1>
-        <div className="flex gap-2">
-          {["all", "PENDING", "CONFIRMED", "REJECTED"].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors ${
-                filter === f
-                  ? "bg-jungle-600 text-white"
-                  : "bg-jungle-800 text-gray-400 hover:text-white"
-              }`}
-            >
-              {f === "all" ? "Todas" : statusLabels[f].label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex gap-2">
+            {["all", "PENDING", "CONFIRMED", "REJECTED"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors ${
+                  filter === f
+                    ? "bg-jungle-600 text-white"
+                    : "bg-jungle-800 text-gray-400 hover:text-white"
+                }`}
+              >
+                {f === "all" ? "Todas" : statusLabels[f].label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={exportCsv}
+            disabled={reservations.length === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-white bg-jungle-900/50 hover:bg-jungle-800/50 border border-jungle-700/30 rounded-sm transition-colors disabled:opacity-40"
+            title="Exportar CSV"
+          >
+            <Download size={14} /> CSV
+          </button>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-gray-500">A carregar...</p>
+        <SkeletonTable rows={6} />
       ) : reservations.length === 0 ? (
         <p className="text-gray-500">Nenhuma reserva encontrada.</p>
       ) : (

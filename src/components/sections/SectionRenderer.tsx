@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import Countdown from "@/components/ui/Countdown";
+import { prisma } from "@/lib/prisma";
 
 type SpacingConfig = {
   marginTop?: number;
@@ -114,6 +116,8 @@ function TextSection({ content }: { content: Record<string, unknown> }) {
   const body = (content.body as string) || "";
   const alignment = (content.alignment as string) || "left";
   const alignClass = alignment === "center" ? "text-center" : alignment === "right" ? "text-right" : "text-left";
+  // Detect whether body was written by the rich text editor (contains HTML tags)
+  const isHtml = /<[a-z][\s\S]*>/i.test(body);
 
   return (
     <div className={alignClass}>
@@ -124,9 +128,16 @@ function TextSection({ content }: { content: Record<string, unknown> }) {
         </h2>
       )}
       {body && (
-        <div className="text-gray-300 leading-relaxed whitespace-pre-wrap mt-4">
-          {body}
-        </div>
+        isHtml ? (
+          <div
+            className="rich-content text-gray-300 leading-relaxed mt-4"
+            dangerouslySetInnerHTML={{ __html: body }}
+          />
+        ) : (
+          <div className="text-gray-300 leading-relaxed whitespace-pre-wrap mt-4">
+            {body}
+          </div>
+        )
       )}
     </div>
   );
@@ -303,27 +314,50 @@ function TestimonialsSection({ content }: { content: Record<string, unknown> }) 
   );
 }
 
-function CountdownSection({ content }: { content: Record<string, unknown> }) {
-  const title = (content.title as string) || "";
-  const description = (content.description as string) || "";
+async function CountdownSection({ content }: { content: Record<string, unknown> }) {
+  const titleOverride = (content.title as string) || "";
+  const descriptionOverride = (content.description as string) || "";
   const targetDate = (content.targetDate as string) || "";
+  const autoNextEvent = content.autoNextEvent === true || content.autoNextEvent === "true";
 
-  // Note: This renders server-side with static values
-  // A client component wrapper would be needed for live countdown
+  let resolvedTarget = targetDate;
+  let resolvedTitle = titleOverride;
+  let resolvedDescription = descriptionOverride;
+
+  if (autoNextEvent) {
+    try {
+      const next = await prisma.event.findFirst({
+        where: { published: true, date: { gte: new Date() } },
+        orderBy: { date: "asc" },
+        select: { title: true, slug: true, date: true },
+      });
+      if (next) {
+        resolvedTarget = next.date.toISOString();
+        if (!titleOverride) resolvedTitle = next.title;
+        if (!descriptionOverride) {
+          resolvedDescription = new Intl.DateTimeFormat("pt-PT", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+          }).format(next.date);
+        }
+      } else if (!targetDate) {
+        // No upcoming event and no manual target — hide the section
+        return null;
+      }
+    } catch {
+      // prisma failure — fall back to manual target if provided
+      if (!targetDate) return null;
+    }
+  }
+
   return (
     <div className="text-center py-12">
-      {title && <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 neon-text">{title}</h2>}
-      {description && <p className="text-gray-400 mb-8">{description}</p>}
-      {targetDate && (
-        <div className="flex justify-center gap-4">
-          {["Dias", "Horas", "Min", "Seg"].map((label) => (
-            <div key={label} className="w-20 h-20 bg-jungle-900/50 border border-jungle-700/30 rounded-sm flex flex-col items-center justify-center neon-border">
-              <span className="text-2xl font-bold text-white">--</span>
-              <span className="text-[10px] text-gray-500 uppercase">{label}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      {resolvedTitle && <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 neon-text">{resolvedTitle}</h2>}
+      {resolvedDescription && <p className="text-gray-400 mb-8 capitalize">{resolvedDescription}</p>}
+      {resolvedTarget && <Countdown targetDate={resolvedTarget} />}
     </div>
   );
 }
@@ -332,7 +366,9 @@ function CountdownSection({ content }: { content: Record<string, unknown> }) {
    MAIN RENDERER
    ============================================ */
 
-const SECTION_COMPONENTS: Record<string, React.FC<{ content: Record<string, unknown> }>> = {
+type SectionComponent = (props: { content: Record<string, unknown> }) => React.ReactNode | Promise<React.ReactNode>;
+
+const SECTION_COMPONENTS: Record<string, SectionComponent> = {
   hero: HeroSection,
   text: TextSection,
   image_gallery: ImageGallerySection,

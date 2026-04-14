@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { verifyRequestOrigin } from "@/lib/csrf";
+import {
+  sendEmail,
+  reservationNotificationHtml,
+  reservationConfirmationHtml,
+} from "@/lib/email";
+import { getSettings } from "@/lib/settings";
+import { logError } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
@@ -46,9 +55,29 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const origin = verifyRequestOrigin(request);
+  if (!origin.ok) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Rate limit: max 3 reservation requests per 15 minutes per IP
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`reservation:${ip}`, 3, 15 * 60 * 1000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Demasiados pedidos. Tenta novamente em ${rl.retryAfterSec}s.` },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
+    );
+  }
+
   try {
     const body = await request.json();
-    const { name, email, phone, date, guests, message, eventId } = body;
+    const { name, email, phone, date, guests, message, eventId, website } = body;
+
+    // Honeypot
+    if (website && String(website).trim().length > 0) {
+      return NextResponse.json({ id: "honeypot" }, { status: 201 });
+    }
 
     if (!name || !email || !phone || !date || !guests) {
       return NextResponse.json(
@@ -57,17 +86,55 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+    }
+
+    const reservationDate = new Date(date);
     const reservation = await prisma.reservation.create({
       data: {
         name,
         email,
         phone,
-        date: new Date(date),
+        date: reservationDate,
         guests: Number(guests),
         message: message || null,
         eventId: eventId || null,
       },
     });
+
+    // Fire-and-forget emails
+    (async () => {
+      try {
+        const settings = await getSettings();
+        const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || settings.email;
+        const tasks: Promise<unknown>[] = [];
+        if (adminEmail) {
+          tasks.push(
+            sendEmail({
+              to: adminEmail,
+              replyTo: email,
+              subject: `[LIT] Nova reserva VIP — ${name}`,
+              html: reservationNotificationHtml({
+                name, email, phone, date: reservationDate, guests: Number(guests), message,
+              }),
+            })
+          );
+        }
+        tasks.push(
+          sendEmail({
+            to: email,
+            subject: "Recebemos o teu pedido — LIT Coimbra",
+            html: reservationConfirmationHtml({
+              name, date: reservationDate, guests: Number(guests),
+            }),
+          })
+        );
+        await Promise.allSettled(tasks);
+      } catch (error) {
+        logError("reservations/notify", error);
+      }
+    })();
 
     return NextResponse.json(reservation, { status: 201 });
   } catch (error) {

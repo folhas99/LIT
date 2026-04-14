@@ -7,6 +7,12 @@ services:
       - DATABASE_URL=postgresql://lit:lit_password@db:5432/litcoimbra
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-change-this-to-a-random-secret}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:2999}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - EMAIL_FROM=${EMAIL_FROM:-}
+      - ADMIN_NOTIFY_EMAIL=${ADMIN_NOTIFY_EMAIL:-}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - NEXT_PUBLIC_SENTRY_ENV=${NEXT_PUBLIC_SENTRY_ENV:-production}
     volumes:
       - uploads:/app/public/uploads
     depends_on:

@@ -14,6 +14,7 @@ import {
   GripVertical,
   ChevronRight,
   X,
+  ExternalLink,
   Layout,
   Type,
   Image,
@@ -27,6 +28,7 @@ import {
   Box,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 /* ================================================================== */
 /* Types                                                               */
@@ -87,12 +89,12 @@ const defaultSpacing: SpacingData = {
 };
 
 const tabs = [
-  { id: "homepage", label: "Homepage" },
-  { id: "sobre", label: "Sobre" },
-  { id: "contacto", label: "Contacto" },
-  { id: "reservas", label: "Reservas" },
-  { id: "eventos", label: "Eventos" },
-  { id: "galeria", label: "Galeria" },
+  { id: "homepage", label: "Homepage", url: "/" },
+  { id: "sobre", label: "Sobre", url: "/sobre" },
+  { id: "contacto", label: "Contacto", url: "/contacto" },
+  { id: "reservas", label: "Reservas", url: "/reservas" },
+  { id: "eventos", label: "Eventos", url: "/eventos" },
+  { id: "galeria", label: "Galeria", url: "/galeria" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -351,6 +353,21 @@ export default function SectionBuilderPage() {
     setHasChanges(true);
   };
 
+  const handlePreview = async () => {
+    const tab = tabs.find((t) => t.id === activeTab);
+    if (!tab) return;
+    if (hasChanges) {
+      const confirmed = window.confirm(
+        "Tens alterações por guardar. Queres guardá-las e pré-visualizar? (Cancelar abre a versão publicada atual)"
+      );
+      if (confirmed) {
+        await handleSave();
+      }
+    }
+    const url = `${tab.url}?_preview=${Date.now()}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
@@ -407,6 +424,14 @@ export default function SectionBuilderPage() {
               Alterações por guardar
             </span>
           )}
+          <button
+            onClick={handlePreview}
+            className="flex items-center gap-2 px-4 py-2.5 bg-jungle-900 border border-jungle-700/50 hover:border-jungle-500 text-gray-300 hover:text-white font-medium text-sm transition-colors rounded-sm"
+            title="Abrir página pública em nova aba"
+          >
+            <ExternalLink size={16} />
+            Pré-visualizar
+          </button>
           <button
             onClick={handleSave}
             disabled={saving || !hasChanges}
@@ -850,11 +875,10 @@ function TextEditor({ content, onUpdate }: EditorProps) {
         value={String(content.title || "")}
         onChange={(v) => onUpdate("title", v)}
       />
-      <FieldTextArea
+      <RichTextEditor
         label="Corpo do Texto"
         value={String(content.body || "")}
         onChange={(v) => onUpdate("body", v)}
-        rows={6}
       />
       <FieldSelect
         label="Alinhamento"
@@ -1224,21 +1248,36 @@ function TestimonialsEditor({ content, onUpdate }: EditorProps) {
 /* ---------- Countdown ---------- */
 
 function CountdownEditor({ content, onUpdate }: EditorProps) {
+  const autoNextEvent = content.autoNextEvent === true || content.autoNextEvent === "true";
   return (
     <div className="space-y-4">
+      <label className="flex items-start gap-3 p-3 bg-jungle-900/60 border border-jungle-700/30 rounded-sm cursor-pointer hover:bg-jungle-800/60 transition-colors">
+        <input
+          type="checkbox"
+          checked={autoNextEvent}
+          onChange={(e) => onUpdate("autoNextEvent", e.target.checked)}
+          className="mt-0.5 accent-jungle-500"
+        />
+        <div>
+          <p className="text-sm text-white font-medium">Escolher próximo evento automaticamente</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            O countdown conta para o próximo evento publicado. Se não houver evento futuro e não indicares uma data alvo manual, a secção fica oculta.
+          </p>
+        </div>
+      </label>
       <FieldInput
-        label="Título"
+        label={autoNextEvent ? "Título (opcional — sobrescreve o título do evento)" : "Título"}
         value={String(content.title || "")}
         onChange={(v) => onUpdate("title", v)}
       />
       <FieldTextArea
-        label="Descrição"
+        label={autoNextEvent ? "Descrição (opcional — sobrescreve a data do evento)" : "Descrição"}
         value={String(content.description || "")}
         onChange={(v) => onUpdate("description", v)}
         rows={3}
       />
       <FieldInput
-        label="Data Alvo"
+        label={autoNextEvent ? "Data Alvo (fallback quando não há evento)" : "Data Alvo"}
         value={String(content.targetDate || "")}
         onChange={(v) => onUpdate("targetDate", v)}
         type="datetime-local"

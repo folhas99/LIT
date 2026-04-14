@@ -14,6 +14,7 @@ export default function ReservasPage() {
     guests: 2,
     message: "",
     eventId: "",
+    website: "",
   });
   const [events, setEvents] = useState<EventOption[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -48,7 +49,7 @@ export default function ReservasPage() {
       }
 
       setStatus("success");
-      setForm({ name: "", email: "", phone: "", date: "", guests: 2, message: "", eventId: "" });
+      setForm({ name: "", email: "", phone: "", date: "", guests: 2, message: "", eventId: "", website: "" });
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Erro ao enviar reserva");
@@ -100,6 +101,18 @@ export default function ReservasPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Honeypot */}
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            value={form.website}
+            onChange={(e) => setForm({ ...form, website: e.target.value })}
+            style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+            aria-hidden="true"
+          />
+
           {/* Name */}
           <div className="animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
             <label htmlFor="name" className="block text-sm text-gray-300 mb-2">

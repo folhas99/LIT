@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import OpeningHoursBadge from "@/components/ui/OpeningHoursBadge";
+import LocaleSwitcher from "@/components/ui/LocaleSwitcher";
+import { useI18n } from "@/components/I18nProvider";
 
 type NavItem = {
   label: string;
@@ -12,6 +16,9 @@ type NavItem = {
 
 export default function Header({
   sections,
+  scheduleJson,
+  logoUrl,
+  siteName,
 }: {
   sections: {
     events: boolean;
@@ -20,9 +27,13 @@ export default function Header({
     about: boolean;
     contact: boolean;
   };
+  scheduleJson?: string;
+  logoUrl?: string;
+  siteName?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,11 +44,11 @@ export default function Header({
   }, []);
 
   const navItems: NavItem[] = [
-    { label: "Eventos", href: "/eventos", enabled: sections.events },
-    { label: "Galeria", href: "/galeria", enabled: sections.gallery },
-    { label: "Reservas VIP", href: "/reservas", enabled: sections.reservations },
-    { label: "Sobre", href: "/sobre", enabled: sections.about },
-    { label: "Contacto", href: "/contacto", enabled: sections.contact },
+    { label: t("nav.events"), href: "/eventos", enabled: sections.events },
+    { label: t("nav.gallery"), href: "/galeria", enabled: sections.gallery },
+    { label: t("nav.reservations"), href: "/reservas", enabled: sections.reservations },
+    { label: t("nav.about"), href: "/sobre", enabled: sections.about },
+    { label: t("nav.contact"), href: "/contacto", enabled: sections.contact },
   ].filter((item) => item.enabled);
 
   return (
@@ -48,16 +59,30 @@ export default function Header({
           : "bg-jungle-950/60 backdrop-blur-md border-b border-jungle-700/20"
       }`}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav aria-label="Navegação principal" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="text-2xl font-bold text-white tracking-wider group-hover:text-neon-green/90 transition-colors duration-300">
-              LIT
-            </span>
-            <span className="text-xs text-jungle-400 tracking-widest uppercase hidden sm:block">
-              Coimbra
-            </span>
+          <Link href="/" className="flex items-center gap-2 group" aria-label={siteName || "LIT Coimbra"}>
+            {logoUrl ? (
+              <Image
+                src={logoUrl}
+                alt={siteName || "LIT Coimbra"}
+                width={140}
+                height={48}
+                priority
+                unoptimized
+                className="h-10 md:h-12 w-auto object-contain transition-opacity duration-300 group-hover:opacity-90"
+              />
+            ) : (
+              <>
+                <span className="text-2xl font-bold text-white tracking-wider group-hover:text-neon-green/90 transition-colors duration-300">
+                  LIT
+                </span>
+                <span className="text-xs text-jungle-400 tracking-widest uppercase hidden sm:block">
+                  Coimbra
+                </span>
+              </>
+            )}
           </Link>
 
           {/* Desktop Nav */}
@@ -71,13 +96,17 @@ export default function Header({
                 {item.label}
               </Link>
             ))}
+            {scheduleJson && <OpeningHoursBadge scheduleJson={scheduleJson} compact />}
+            <LocaleSwitcher />
           </div>
 
           {/* Mobile menu button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden text-white p-2"
-            aria-label="Menu"
+            aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={isOpen}
+            aria-controls="mobile-nav"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -86,7 +115,7 @@ export default function Header({
 
       {/* Mobile Nav */}
       {isOpen && (
-        <div className="md:hidden bg-jungle-900/95 backdrop-blur-xl border-t border-jungle-700/30">
+        <div id="mobile-nav" className="md:hidden bg-jungle-900/95 backdrop-blur-xl border-t border-jungle-700/30">
           <div className="px-4 py-6 space-y-4">
             {navItems.map((item) => (
               <Link
@@ -98,6 +127,14 @@ export default function Header({
                 {item.label}
               </Link>
             ))}
+            {scheduleJson && (
+              <div className="pt-2 border-t border-jungle-700/30">
+                <OpeningHoursBadge scheduleJson={scheduleJson} compact />
+              </div>
+            )}
+            <div className="pt-2">
+              <LocaleSwitcher />
+            </div>
           </div>
         </div>
       )}

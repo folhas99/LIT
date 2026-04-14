@@ -457,3 +457,128 @@ body {
 .no-particles .particles-container {
   display: none !important;
 }
+
+/* Rich text content from TipTap editor */
+.rich-content h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.025em;
+}
+.rich-content h3 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.rich-content p {
+  margin: 0.75rem 0;
+}
+.rich-content a {
+  color: #39FF14;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rich-content a:hover {
+  opacity: 0.8;
+}
+.rich-content strong {
+  color: #fff;
+  font-weight: 600;
+}
+.rich-content em {
+  font-style: italic;
+}
+.rich-content u {
+  text-decoration: underline;
+}
+.rich-content ul,
+.rich-content ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+.rich-content ul {
+  list-style: disc;
+}
+.rich-content ol {
+  list-style: decimal;
+}
+.rich-content li {
+  margin: 0.25rem 0;
+}
+.rich-content blockquote {
+  border-left: 3px solid rgba(57, 255, 20, 0.5);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #d1d5db;
+  font-style: italic;
+}
+
+/* TipTap editor in admin — reuse same styling */
+.ProseMirror h2 { font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0.75rem 0 0.5rem; }
+.ProseMirror h3 { font-size: 1.25rem; font-weight: 600; color: #fff; margin: 0.75rem 0 0.5rem; }
+.ProseMirror p { margin: 0.5rem 0; }
+.ProseMirror a { color: #39FF14; text-decoration: underline; }
+.ProseMirror ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
+.ProseMirror ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+.ProseMirror blockquote {
+  border-left: 3px solid rgba(57, 255, 20, 0.5);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: #d1d5db;
+  font-style: italic;
+}
+.ProseMirror:focus { outline: none; }
+
+/* Accessibility — focus-visible ring for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-neon-green);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip-to-content link */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--color-jungle-900);
+  color: #fff;
+  font-weight: 600;
+  border: 2px solid var(--color-neon-green);
+  border-radius: 2px;
+}
+.skip-to-content:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -31,9 +31,13 @@ export async function POST(request: Request) {
 
     const created = await prisma.photo.createMany({
       data: photos.map(
-        (photo: { url: string; alt?: string; galleryId: string }, index: number) => ({
+        (
+          photo: { url: string; alt?: string | null; blurDataUrl?: string | null; galleryId: string },
+          index: number
+        ) => ({
           url: photo.url,
           alt: photo.alt || null,
+          blurDataUrl: photo.blurDataUrl || null,
           galleryId: photo.galleryId,
           order: index,
         })

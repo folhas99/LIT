@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 
 type Gallery = {
   id: string;
@@ -56,7 +57,11 @@ export default function AdminGaleriaPage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-500">A carregar...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
       ) : galleries.length === 0 ? (
         <p className="text-gray-500">Nenhum álbum criado.</p>
       ) : (

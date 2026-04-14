@@ -49,6 +49,11 @@ export type SiteSettings = {
   contentFooterText: string;
   faviconUrl: string;
   logoUrl: string;
+  analyticsPlausibleDomain: string;
+  analyticsPlausibleScript: string;
+  scheduleHours: string; // JSON: { mon: null | [open, close], tue: ..., ... } time as "HH:MM"
+  mapLatitude: string;
+  mapLongitude: string;
 };
 
 export const defaults: SiteSettings = {
@@ -100,6 +105,21 @@ export const defaults: SiteSettings = {
   contentFooterText: "A tua nova casa em Coimbra.",
   faviconUrl: "",
   logoUrl: "",
+  analyticsPlausibleDomain: "",
+  analyticsPlausibleScript: "https://plausible.io/js/script.js",
+  // Default: Wed-Sat 23:00-06:00
+  scheduleHours: JSON.stringify({
+    mon: null,
+    tue: null,
+    wed: ["23:00", "06:00"],
+    thu: ["23:00", "06:00"],
+    fri: ["23:00", "06:00"],
+    sat: ["23:00", "06:00"],
+    sun: null,
+  }),
+  // Coimbra city center default coordinates
+  mapLatitude: "40.2111",
+  mapLongitude: "-8.4292",
 };
 
 export async function getSettings(): Promise<SiteSettings> {

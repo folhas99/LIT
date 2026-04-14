@@ -62,9 +62,17 @@ type EventJsonLdProps = {
   endDate?: string;
   image?: string;
   url: string;
+  lineup?: string[];
   location: {
     name: string;
     address: string;
+  };
+  offers?: {
+    url: string;
+    price?: string;
+    priceCurrency?: string;
+    availability?: "InStock" | "SoldOut" | "PreOrder";
+    validFrom?: string;
   };
 };
 
@@ -75,16 +83,25 @@ export function EventJsonLd({
   endDate,
   image,
   url,
+  lineup,
   location,
+  offers,
 }: EventJsonLdProps) {
+  const performers = (lineup || [])
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => ({ "@type": "PerformingGroup", name: p }));
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Event",
+    "@type": "MusicEvent",
     name,
     ...(description && { description }),
     startDate,
     ...(endDate && { endDate }),
-    ...(image && { image }),
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    ...(image && { image: Array.isArray(image) ? image : [image] }),
     url,
     location: {
       "@type": "Place",
@@ -93,6 +110,7 @@ export function EventJsonLd({
         "@type": "PostalAddress",
         streetAddress: location.address,
         addressLocality: "Coimbra",
+        addressRegion: "Coimbra",
         addressCountry: "PT",
       },
     },
@@ -100,6 +118,15 @@ export function EventJsonLd({
       "@type": "Organization",
       name: location.name,
       url,
+    },
+    ...(performers.length > 0 && { performer: performers }),
+    offers: {
+      "@type": "Offer",
+      url: offers?.url || url,
+      price: offers?.price || "0",
+      priceCurrency: offers?.priceCurrency || "EUR",
+      availability: `https://schema.org/${offers?.availability || "InStock"}`,
+      validFrom: offers?.validFrom || new Date().toISOString(),
     },
   };
 

@@ -5,14 +5,19 @@ import { logError } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import SectionRenderer from "@/components/sections/SectionRenderer";
 import ContactForm from "./ContactForm";
+import ContactMap from "@/components/ContactMap";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Contacto",
-  description: "Entra em contacto com o LIT Coimbra.",
-};
+import { buildPageMetadata } from "@/lib/page-meta";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("contacto", {
+    title: "Contacto",
+    description: "Entra em contacto com o LIT Coimbra.",
+  });
+}
 
 export default async function ContactoPage() {
   let settings;
@@ -27,26 +32,8 @@ export default async function ContactoPage() {
     } catch { /* table might not exist */ }
   } catch (error) {
     logError("contacto/page", error);
-    settings = {
-      siteName: "LIT Coimbra",
-      siteDescription: "A tua nova casa! Discoteca em Coimbra.",
-      address: "Coimbra, Portugal",
-      phone: "",
-      email: "info@litcoimbra.pt",
-      instagram: "https://www.instagram.com/lit.coimbra/",
-      facebook: "",
-      tiktok: "",
-      schedule: "Quarta a Sábado, 23:00 - 06:00",
-      heroTitle: "LIT Coimbra",
-      heroSubtitle: "A tua nova casa",
-      heroImage: "",
-      heroVideo: "",
-      sectionEvents: "true",
-      sectionGallery: "true",
-      sectionReservations: "true",
-      sectionAbout: "true",
-      sectionContact: "true",
-    };
+    const { defaults: s } = await import("@/lib/settings");
+    settings = { ...s };
   }
 
   const beforeSections = sections.filter((s) => s.order < 0);
@@ -140,6 +127,21 @@ export default async function ContactoPage() {
             <ContactForm />
           </div>
         </div>
+
+        {/* Map */}
+        {(() => {
+          const lat = parseFloat(settings.mapLatitude || "");
+          const lng = parseFloat(settings.mapLongitude || "");
+          if (!isFinite(lat) || !isFinite(lng)) return null;
+          return (
+            <div className="mt-16 animate-fade-in-up">
+              <h2 className="text-xl font-semibold text-jungle-400 uppercase tracking-wider mb-4">
+                Onde estamos
+              </h2>
+              <ContactMap lat={lat} lng={lng} label={settings.siteName || "LIT Coimbra"} />
+            </div>
+          );
+        })()}
 
         {afterSections.length > 0 && <SectionRenderer sections={afterSections} />}
       </div>

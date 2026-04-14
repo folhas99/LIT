@@ -9,6 +9,7 @@ type Photo = {
   url: string;
   alt: string | null;
   order: number;
+  blurDataUrl?: string | null;
 };
 
 export default function GalleryGrid({ photos }: { photos: Photo[] }) {
@@ -29,6 +30,9 @@ export default function GalleryGrid({ photos }: { photos: Photo[] }) {
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              {...(photo.blurDataUrl
+                ? { placeholder: "blur" as const, blurDataURL: photo.blurDataUrl }
+                : {})}
             />
             <div className="absolute inset-0 bg-jungle-950/0 group-hover:bg-jungle-950/30 transition-colors" />
           </button>

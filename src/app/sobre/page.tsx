@@ -7,10 +7,14 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Sobre",
-  description: "Sobre o LIT Coimbra — a tua nova casa.",
-};
+import { buildPageMetadata } from "@/lib/page-meta";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildPageMetadata("sobre", {
+    title: "Sobre",
+    description: "Sobre o LIT Coimbra — a tua nova casa.",
+  });
+}
 
 export default async function SobrePage() {
   let settings;

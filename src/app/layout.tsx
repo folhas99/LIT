@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
+import { cookies } from "next/headers";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ThemeProvider from "@/components/ThemeProvider";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import ToastProvider from "@/components/ToastProvider";
+import { I18nProvider } from "@/components/I18nProvider";
+import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES, type Locale } from "@/lib/i18n";
 import { getSettings, isSectionEnabled, defaults as settingsDefaults } from "@/lib/settings";
 
 const inter = Inter({
@@ -65,6 +70,11 @@ export default async function RootLayout({
   const pathname = headersList.get("x-pathname") || "";
   const isAdmin = pathname.startsWith("/admin");
 
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value as Locale | undefined;
+  const locale: Locale = cookieLocale && LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
+  const htmlLang = locale === "pt" ? "pt-PT" : "en";
+
   let settings;
   let sections = {
     events: true,
@@ -74,9 +84,9 @@ export default async function RootLayout({
     contact: true,
   };
 
-  if (!isAdmin) {
-    try {
-      settings = await getSettings();
+  try {
+    settings = await getSettings();
+    if (!isAdmin) {
       sections = {
         events: isSectionEnabled(settings, "sectionEvents"),
         gallery: isSectionEnabled(settings, "sectionGallery"),
@@ -84,20 +94,60 @@ export default async function RootLayout({
         about: isSectionEnabled(settings, "sectionAbout"),
         contact: isSectionEnabled(settings, "sectionContact"),
       };
-    } catch {
-      settings = { ...settingsDefaults };
     }
+  } catch {
+    settings = { ...settingsDefaults };
   }
 
+  const plausibleDomain = !isAdmin ? settings?.analyticsPlausibleDomain?.trim() : "";
+  const plausibleScript =
+    settings?.analyticsPlausibleScript?.trim() || "https://plausible.io/js/script.js";
+
   return (
-    <html lang="pt-PT" className={`${inter.variable} h-full antialiased`}>
+    <html lang={htmlLang} className={`${inter.variable} h-full antialiased`}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0a1f0f" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {settings?.faviconUrl && (
+          <>
+            <link rel="icon" href={settings.faviconUrl} />
+            <link rel="shortcut icon" href={settings.faviconUrl} />
+            <link rel="apple-touch-icon" href={settings.faviconUrl} />
+          </>
+        )}
+        {plausibleDomain && (
+          <script
+            defer
+            data-domain={plausibleDomain}
+            src={plausibleScript}
+          />
+        )}
+      </head>
       <body className="min-h-full flex flex-col font-sans">
-        {!isAdmin && <ThemeProvider />}
-        {!isAdmin && <Header sections={sections} />}
-        <main className={!isAdmin ? "flex-1 pt-16 md:pt-20" : "flex-1"}>
-          {children}
-        </main>
-        {!isAdmin && <Footer settings={settings ?? { ...settingsDefaults }} sections={sections} />}
+        <I18nProvider initialLocale={locale}>
+          <ToastProvider />
+          {!isAdmin && (
+            <a href="#main-content" className="skip-to-content">
+              {locale === "pt" ? "Saltar para o conteúdo" : "Skip to content"}
+            </a>
+          )}
+          {!isAdmin && <ServiceWorkerRegister />}
+          {!isAdmin && <ThemeProvider />}
+          {!isAdmin && (
+            <Header
+              sections={sections}
+              scheduleJson={settings?.scheduleHours}
+              logoUrl={settings?.logoUrl}
+              siteName={settings?.siteName}
+            />
+          )}
+          <main id="main-content" className={!isAdmin ? "flex-1 pt-16 md:pt-20" : "flex-1"}>
+            {children}
+          </main>
+          {!isAdmin && <Footer settings={settings ?? { ...settingsDefaults }} sections={sections} />}
+        </I18nProvider>
       </body>
     </html>
   );

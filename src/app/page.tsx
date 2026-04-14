@@ -2,13 +2,24 @@ import Hero from "@/components/home/Hero";
 import EventsPreview from "@/components/home/EventsPreview";
 import GalleryPreview from "@/components/home/GalleryPreview";
 import ContactCTA from "@/components/home/ContactCTA";
+import NextEventCountdown from "@/components/home/NextEventCountdown";
 import SectionRenderer from "@/components/sections/SectionRenderer";
 import { LocalBusinessJsonLd, WebsiteJsonLd } from "@/components/SEO";
 import { prisma } from "@/lib/prisma";
-import { logError } from "@/lib/logger";
 import { getSettings, isSectionEnabled, defaults as settingsDefaults } from "@/lib/settings";
+import { buildPageMetadata } from "@/lib/page-meta";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings().catch(() => null);
+  return buildPageMetadata("homepage", {
+    title: settings?.siteName || "LIT Coimbra",
+    description: settings?.siteDescription || "A tua nova casa! Discoteca em Coimbra.",
+    absoluteTitle: true,
+  });
+}
 
 export default async function HomePage() {
   let settings;
@@ -68,6 +79,14 @@ export default async function HomePage() {
       />
 
       {middleSections.length > 0 && <SectionRenderer sections={middleSections} />}
+
+      {isSectionEnabled(settings, "sectionEvents") && events[0] && (
+        <NextEventCountdown
+          title={events[0].title}
+          slug={events[0].slug}
+          date={events[0].date}
+        />
+      )}
 
       {isSectionEnabled(settings, "sectionEvents") && events.length > 0 && (
         <EventsPreview events={events} />

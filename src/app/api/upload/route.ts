@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import sharp from "sharp";
 
 const ALLOWED_TYPES = [
   "image/jpeg",
@@ -57,8 +58,22 @@ export async function POST(request: Request) {
 
     await writeFile(path.join(uploadDir, filename), buffer);
 
+    // Generate a tiny blur placeholder (base64 data URL) for next/image placeholder="blur"
+    let blurDataUrl: string | null = null;
+    try {
+      if (file.type !== "image/gif") {
+        const blur = await sharp(buffer)
+          .resize(16, 16, { fit: "inside" })
+          .webp({ quality: 40 })
+          .toBuffer();
+        blurDataUrl = `data:image/webp;base64,${blur.toString("base64")}`;
+      }
+    } catch {
+      // non-fatal: continue without blur
+    }
+
     return NextResponse.json(
-      { url: `/uploads/${filename}` },
+      { url: `/uploads/${filename}`, blurDataUrl },
       { status: 201 }
     );
   } catch (error) {

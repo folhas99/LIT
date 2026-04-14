@@ -8,10 +8,13 @@ import {
   ChevronDown,
   ChevronUp,
   Inbox,
-  Filter,
-  AlertCircle,
+  CheckSquare,
+  Square,
+  Download,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 type Message = {
   id: string;
@@ -32,6 +35,8 @@ export default function MensagensPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>("all");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   useEffect(() => {
     fetchMessages();
@@ -70,8 +75,9 @@ export default function MensagensPage() {
     try {
       await fetch(`/api/contact/${id}`, { method: "DELETE" });
       setMessages((prev) => prev.filter((m) => m.id !== id));
+      toast.success("Mensagem eliminada");
     } catch {
-      // ignore
+      toast.error("Falhou a eliminar");
     } finally {
       setDeleting(null);
     }
@@ -86,6 +92,83 @@ export default function MensagensPage() {
     }
   };
 
+  const toggleSelect = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === filtered.length) setSelected(new Set());
+    else setSelected(new Set(filtered.map((m) => m.id)));
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
+  const bulkMarkRead = async (read: boolean) => {
+    if (selected.size === 0) return;
+    setBulkBusy(true);
+    const ids = Array.from(selected);
+    const results = await Promise.allSettled(
+      ids.map((id) =>
+        fetch(`/api/contact/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ read }),
+        })
+      )
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    setMessages((prev) =>
+      prev.map((m) => (selected.has(m.id) ? { ...m, read } : m))
+    );
+    toast.success(`${ok} mensagem${ok === 1 ? "" : "s"} marcada${ok === 1 ? "" : "s"} como ${read ? "lida" : "não lida"}${ok === 1 ? "" : "s"}`);
+    clearSelection();
+    setBulkBusy(false);
+  };
+
+  const bulkDelete = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`Eliminar ${selected.size} mensagem(ns)?`)) return;
+    setBulkBusy(true);
+    const ids = Array.from(selected);
+    const results = await Promise.allSettled(
+      ids.map((id) => fetch(`/api/contact/${id}`, { method: "DELETE" }))
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    setMessages((prev) => prev.filter((m) => !selected.has(m.id)));
+    toast.success(`${ok} mensagem${ok === 1 ? "" : "s"} eliminada${ok === 1 ? "" : "s"}`);
+    clearSelection();
+    setBulkBusy(false);
+  };
+
+  const exportCsv = () => {
+    const rows = messages.map((m) => [
+      m.name,
+      m.email,
+      m.phone || "",
+      m.subject || "",
+      m.message.replace(/[\r\n]+/g, " "),
+      m.read ? "lida" : "não lida",
+      new Date(m.createdAt).toISOString(),
+    ]);
+    const header = ["Nome", "Email", "Telefone", "Assunto", "Mensagem", "Estado", "Data"];
+    const csv = [header, ...rows]
+      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mensagens-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const filtered = messages.filter((m) => {
     if (filter === "unread") return !m.read;
     if (filter === "read") return m.read;
@@ -93,12 +176,13 @@ export default function MensagensPage() {
   });
 
   const unreadCount = messages.filter((m) => !m.read).length;
+  const allSelected = filtered.length > 0 && selected.size === filtered.length;
 
-  if (loading) return <p className="text-gray-500">A carregar...</p>;
+  if (loading) return <SkeletonTable rows={6} />;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             Mensagens
@@ -112,10 +196,17 @@ export default function MensagensPage() {
             Mensagens recebidas pelo formulário de contacto.
           </p>
         </div>
+        <button
+          onClick={exportCsv}
+          disabled={messages.length === 0}
+          className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-400 hover:text-white bg-jungle-900/50 hover:bg-jungle-800/50 border border-jungle-700/30 rounded-sm transition-colors disabled:opacity-40"
+        >
+          <Download size={16} /> CSV
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-4 items-center flex-wrap">
         {(["all", "unread", "read"] as const).map((f) => (
           <button
             key={f}
@@ -133,7 +224,53 @@ export default function MensagensPage() {
             )}
           </button>
         ))}
+        {filtered.length > 0 && (
+          <button
+            onClick={toggleSelectAll}
+            className="ml-auto flex items-center gap-1.5 text-xs text-gray-400 hover:text-white"
+          >
+            {allSelected ? <CheckSquare size={14} /> : <Square size={14} />}
+            {allSelected ? "Desselecionar todos" : "Selecionar todos"}
+          </button>
+        )}
       </div>
+
+      {/* Bulk toolbar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-2 mb-4 p-3 bg-jungle-800/60 border border-jungle-600/40 rounded-sm">
+          <span className="text-sm text-white">
+            {selected.size} selecionada{selected.size === 1 ? "" : "s"}
+          </span>
+          <div className="h-4 w-px bg-jungle-600 mx-2" />
+          <button
+            disabled={bulkBusy}
+            onClick={() => bulkMarkRead(true)}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-jungle-700 rounded-sm transition-colors disabled:opacity-40"
+          >
+            <MailOpen size={14} /> Marcar lidas
+          </button>
+          <button
+            disabled={bulkBusy}
+            onClick={() => bulkMarkRead(false)}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-jungle-700 rounded-sm transition-colors disabled:opacity-40"
+          >
+            <Mail size={14} /> Marcar não lidas
+          </button>
+          <button
+            disabled={bulkBusy}
+            onClick={bulkDelete}
+            className="flex items-center gap-1 px-3 py-1.5 text-xs text-red-400 hover:text-white hover:bg-red-900/40 rounded-sm transition-colors disabled:opacity-40"
+          >
+            <Trash2 size={14} /> Eliminar
+          </button>
+          <button
+            onClick={clearSelection}
+            className="ml-auto text-xs text-gray-400 hover:text-white"
+          >
+            Limpar
+          </button>
+        </div>
+      )}
 
       {/* Messages */}
       {filtered.length === 0 ? (
@@ -148,47 +285,58 @@ export default function MensagensPage() {
               key={msg.id}
               className={cn(
                 "border rounded-sm transition-colors",
-                msg.read
+                selected.has(msg.id)
+                  ? "bg-jungle-800/60 border-jungle-500/50"
+                  : msg.read
                   ? "bg-jungle-900/30 border-jungle-700/20"
                   : "bg-jungle-900/60 border-jungle-600/30"
               )}
             >
-              <button
-                onClick={() => toggleExpand(msg.id)}
-                className="w-full flex items-center gap-4 p-4 text-left"
-              >
-                <div className="flex-shrink-0">
-                  {msg.read ? (
-                    <MailOpen size={18} className="text-gray-500" />
-                  ) : (
-                    <Mail size={18} className="text-jungle-400" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className={cn("text-sm font-medium", msg.read ? "text-gray-300" : "text-white")}>
-                      {msg.name}
-                    </span>
-                    <span className="text-gray-500 text-xs">&lt;{msg.email}&gt;</span>
+              <div className="flex items-center">
+                <button
+                  onClick={(e) => toggleSelect(msg.id, e)}
+                  className="pl-4 pr-0 py-4 text-gray-400 hover:text-white flex-shrink-0"
+                  aria-label={selected.has(msg.id) ? "Desselecionar" : "Selecionar"}
+                >
+                  {selected.has(msg.id) ? <CheckSquare size={16} className="text-neon-green" /> : <Square size={16} />}
+                </button>
+                <button
+                  onClick={() => toggleExpand(msg.id)}
+                  className="flex-1 flex items-center gap-4 p-4 text-left"
+                >
+                  <div className="flex-shrink-0">
+                    {msg.read ? (
+                      <MailOpen size={18} className="text-gray-500" />
+                    ) : (
+                      <Mail size={18} className="text-jungle-400" />
+                    )}
                   </div>
-                  <p className="text-gray-400 text-sm truncate mt-0.5">
-                    {msg.subject || msg.message.substring(0, 100)}
-                  </p>
-                </div>
-                <span className="text-gray-500 text-xs flex-shrink-0">
-                  {new Date(msg.createdAt).toLocaleDateString("pt-PT", {
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-                {expanded === msg.id ? (
-                  <ChevronUp size={16} className="text-gray-500 flex-shrink-0" />
-                ) : (
-                  <ChevronDown size={16} className="text-gray-500 flex-shrink-0" />
-                )}
-              </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={cn("text-sm font-medium", msg.read ? "text-gray-300" : "text-white")}>
+                        {msg.name}
+                      </span>
+                      <span className="text-gray-500 text-xs">&lt;{msg.email}&gt;</span>
+                    </div>
+                    <p className="text-gray-400 text-sm truncate mt-0.5">
+                      {msg.subject || msg.message.substring(0, 100)}
+                    </p>
+                  </div>
+                  <span className="text-gray-500 text-xs flex-shrink-0">
+                    {new Date(msg.createdAt).toLocaleDateString("pt-PT", {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  {expanded === msg.id ? (
+                    <ChevronUp size={16} className="text-gray-500 flex-shrink-0" />
+                  ) : (
+                    <ChevronDown size={16} className="text-gray-500 flex-shrink-0" />
+                  )}
+                </button>
+              </div>
 
               {expanded === msg.id && (
                 <div className="px-4 pb-4 pt-0 border-t border-jungle-700/20 mt-0">

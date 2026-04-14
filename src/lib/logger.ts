@@ -22,6 +22,23 @@ export function logError(context: string, error: unknown): void {
   if (errorLog.length > MAX_ERRORS) {
     errorLog.length = MAX_ERRORS;
   }
+
+  // Forward to Sentry if configured (dynamic import — no hard dep at compile time)
+  const dsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
+  if (dsn) {
+    import("@sentry/nextjs")
+      .then((Sentry) => {
+        Sentry.withScope((scope) => {
+          scope.setTag("context", context);
+          if (error instanceof Error) {
+            Sentry.captureException(error);
+          } else {
+            Sentry.captureMessage(String(error), "error");
+          }
+        });
+      })
+      .catch(() => {});
+  }
 }
 
 export function getRecentErrors(): ErrorEntry[] {

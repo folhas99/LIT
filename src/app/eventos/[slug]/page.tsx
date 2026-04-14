@@ -21,12 +21,24 @@ export async function generateMetadata({
     event = await prisma.event.findUnique({ where: { slug } });
   } catch { /* ignore */ }
   if (!event) return { title: "Evento não encontrado" };
+  const description =
+    event.description?.replace(/<[^>]*>/g, "").slice(0, 160) ||
+    `${event.title} no LIT Coimbra`;
+  const ogImage = event.image || `/api/og?event=${encodeURIComponent(event.slug)}`;
   return {
     title: event.title,
-    description: event.description?.slice(0, 160) || `${event.title} no LIT Coimbra`,
+    description,
     openGraph: {
       title: event.title,
-      images: event.image ? [event.image] : [],
+      description,
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: event.title,
+      description,
+      images: [ogImage],
     },
   };
 }
@@ -143,14 +155,18 @@ export default async function EventoPage({
 
       <EventJsonLd
         name={event.title}
-        description={event.description?.slice(0, 300) || undefined}
+        description={event.description?.replace(/<[^>]*>/g, "").slice(0, 300) || undefined}
         startDate={new Date(event.date).toISOString()}
         endDate={event.endDate ? new Date(event.endDate).toISOString() : undefined}
         image={event.image || undefined}
         url={`${process.env.NEXTAUTH_URL || "http://localhost:2999"}/eventos/${event.slug}`}
+        lineup={event.lineup ? event.lineup.split(/[\n,;]+/) : undefined}
         location={{
           name: "LIT Coimbra",
           address: "Coimbra, Portugal",
+        }}
+        offers={{
+          url: `${process.env.NEXTAUTH_URL || "http://localhost:2999"}/reservas`,
         }}
       />
     </div>
