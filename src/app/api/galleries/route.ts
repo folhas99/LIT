@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, date, eventId, coverImage, published } = body;
+    const { title, titleEn, date, eventId, coverImage, published } = body;
 
     if (!title || !date) {
       return NextResponse.json(
@@ -53,6 +53,7 @@ export async function POST(request: Request) {
     const gallery = await prisma.gallery.create({
       data: {
         title,
+        titleEn: titleEn || null,
         slug,
         date: new Date(date),
         eventId: eventId || null,

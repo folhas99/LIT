@@ -25,14 +25,26 @@ function writeCookie(name: string, value: string) {
 
 export function I18nProvider({
   initialLocale,
+  englishEnabled = true,
   children,
 }: {
   initialLocale?: Locale;
+  englishEnabled?: boolean;
   children: React.ReactNode;
 }) {
-  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? DEFAULT_LOCALE);
+  const [locale, setLocaleState] = useState<Locale>(
+    englishEnabled ? initialLocale ?? DEFAULT_LOCALE : DEFAULT_LOCALE
+  );
 
   useEffect(() => {
+    // If EN is disabled globally, force pt and clear any stale cookie.
+    if (!englishEnabled) {
+      if (locale !== DEFAULT_LOCALE) setLocaleState(DEFAULT_LOCALE);
+      if (readCookie(LOCALE_COOKIE) && readCookie(LOCALE_COOKIE) !== DEFAULT_LOCALE) {
+        writeCookie(LOCALE_COOKIE, DEFAULT_LOCALE);
+      }
+      return;
+    }
     const cookieLocale = readCookie(LOCALE_COOKIE) as Locale | null;
     if (cookieLocale && cookieLocale !== locale) {
       setLocaleState(cookieLocale);
@@ -45,15 +57,19 @@ export function I18nProvider({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [englishEnabled]);
 
-  const setLocale = useCallback((l: Locale) => {
-    setLocaleState(l);
-    writeCookie(LOCALE_COOKIE, l);
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = l === "pt" ? "pt-PT" : "en";
-    }
-  }, []);
+  const setLocale = useCallback(
+    (l: Locale) => {
+      if (!englishEnabled && l !== DEFAULT_LOCALE) return;
+      setLocaleState(l);
+      writeCookie(LOCALE_COOKIE, l);
+      if (typeof document !== "undefined") {
+        document.documentElement.lang = l === "pt" ? "pt-PT" : "en";
+      }
+    },
+    [englishEnabled]
+  );
 
   const t = useCallback((key: string) => translate(locale, key), [locale]);
 

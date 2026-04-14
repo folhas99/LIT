@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import { Save, Upload, X, GripVertical, Star } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
+import BilingualInput from "@/components/admin/BilingualInput";
 import {
   DndContext,
   closestCenter,
@@ -35,6 +36,7 @@ type Photo = {
 type GalleryFormData = {
   id?: string;
   title: string;
+  titleEn?: string;
   date: string;
   eventId: string;
   coverImage: string;
@@ -44,6 +46,7 @@ type GalleryFormData = {
 
 const defaultForm: GalleryFormData = {
   title: "",
+  titleEn: "",
   date: "",
   eventId: "",
   coverImage: "",
@@ -59,10 +62,21 @@ export default function GalleryForm({
   events?: { id: string; title: string }[];
 }) {
   const router = useRouter();
-  const [form, setForm] = useState<GalleryFormData>(initialData || defaultForm);
+  const [form, setForm] = useState<GalleryFormData>({
+    ...defaultForm,
+    ...(initialData || {}),
+  });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [altEditing, setAltEditing] = useState<number | null>(null);
+  const [englishEnabled, setEnglishEnabled] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((s) => setEnglishEnabled(s?.localeEnabledEn !== "false"))
+      .catch(() => {});
+  }, []);
 
   const isEdit = !!initialData?.id;
 
@@ -182,6 +196,7 @@ export default function GalleryForm({
     try {
       const galleryData = {
         title: form.title,
+        titleEn: form.titleEn?.trim() ? form.titleEn : null,
         date: new Date(form.date).toISOString(),
         eventId: form.eventId || null,
         coverImage: form.coverImage || null,
@@ -242,17 +257,16 @@ export default function GalleryForm({
   return (
     <form onSubmit={handleSubmit} className="max-w-3xl space-y-6">
       {/* Title */}
-      <div>
-        <label className="block text-sm text-gray-300 mb-2">Título *</label>
-        <input
-          type="text"
-          required
-          value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
-          className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white focus:outline-none focus:border-jungle-500 transition-colors"
-          placeholder="Nome do álbum"
-        />
-      </div>
+      <BilingualInput
+        label="Título"
+        required
+        valuePt={form.title}
+        valueEn={form.titleEn || ""}
+        onChangePt={(v) => setForm({ ...form, title: v })}
+        onChangeEn={(v) => setForm({ ...form, titleEn: v })}
+        englishEnabled={englishEnabled}
+        placeholder="Nome do álbum"
+      />
 
       {/* Date + Event */}
       <div className="grid grid-cols-2 gap-4">

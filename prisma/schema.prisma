@@ -22,21 +22,24 @@ enum Role {
 }
 
 model Event {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  description String?   @db.Text
-  date        DateTime
-  endDate     DateTime?
-  image       String?
-  lineup      String?   @db.Text
-  eventType   String?
-  featured    Boolean   @default(false)
-  published   Boolean   @default(true)
-  publishAt   DateTime?
-  gallery     Gallery?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  title         String
+  titleEn       String?
+  slug          String    @unique
+  description   String?   @db.Text
+  descriptionEn String?   @db.Text
+  date          DateTime
+  endDate       DateTime?
+  image         String?
+  lineup        String?   @db.Text
+  lineupEn      String?   @db.Text
+  eventType     String?
+  featured      Boolean   @default(false)
+  published     Boolean   @default(true)
+  publishAt     DateTime?
+  gallery       Gallery?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([date])
   @@index([published, date])
@@ -46,6 +49,7 @@ model Event {
 model Gallery {
   id         String    @id @default(cuid())
   title      String
+  titleEn    String?
   slug       String    @unique
   eventId    String?   @unique
   event      Event?    @relation(fields: [eventId], references: [id])

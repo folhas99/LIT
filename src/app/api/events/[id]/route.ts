@@ -43,11 +43,14 @@ export async function PUT(
     const body = await request.json();
     const {
       title,
+      titleEn,
       description,
+      descriptionEn,
       date,
       endDate,
       image,
       lineup,
+      lineupEn,
       eventType,
       featured,
       published,
@@ -59,11 +62,14 @@ export async function PUT(
       data.title = title;
       data.slug = slugify(title);
     }
+    if (titleEn !== undefined) data.titleEn = titleEn;
     if (description !== undefined) data.description = description;
+    if (descriptionEn !== undefined) data.descriptionEn = descriptionEn;
     if (date !== undefined) data.date = new Date(date);
     if (endDate !== undefined) data.endDate = endDate ? new Date(endDate) : null;
     if (image !== undefined) data.image = image;
     if (lineup !== undefined) data.lineup = lineup;
+    if (lineupEn !== undefined) data.lineupEn = lineupEn;
     if (eventType !== undefined) data.eventType = eventType;
     if (featured !== undefined) data.featured = featured;
     if (published !== undefined) data.published = published;

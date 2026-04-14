@@ -47,11 +47,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const {
       title,
+      titleEn,
       description,
+      descriptionEn,
       date,
       endDate,
       image,
       lineup,
+      lineupEn,
       eventType,
       featured,
       published,
@@ -77,12 +80,15 @@ export async function POST(request: Request) {
     const event = await prisma.event.create({
       data: {
         title,
+        titleEn: titleEn || null,
         slug,
         description: description || null,
+        descriptionEn: descriptionEn || null,
         date: new Date(date),
         endDate: endDate ? new Date(endDate) : null,
         image: image || null,
         lineup: lineup || null,
+        lineupEn: lineupEn || null,
         eventType: eventType || null,
         featured: featured ?? false,
         published: published ?? true,

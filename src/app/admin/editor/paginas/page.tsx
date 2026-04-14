@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Save, CheckCircle, AlertCircle, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ImageUploader from "@/components/admin/ImageUploader";
+import BilingualInput from "@/components/admin/BilingualInput";
 
 type Settings = Record<string, string>;
 
@@ -294,6 +295,44 @@ function SeoTab({
 /* Shared field components                                             */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Bilingual setting field. Reads PT from `settings[key]` and EN from
+ * `settings[`${key}__en`]`. If EN is disabled in settings, only PT is shown.
+ */
+function BiField({
+  label,
+  settingKey,
+  settings,
+  update,
+  placeholder,
+  multiline,
+  rows,
+}: {
+  label: string;
+  settingKey: string;
+  settings: Settings;
+  update: (key: string, value: string) => void;
+  placeholder?: string;
+  multiline?: boolean;
+  rows?: number;
+}) {
+  const englishEnabled = settings.localeEnabledEn !== "false";
+  const common = {
+    label,
+    valuePt: settings[settingKey] || "",
+    valueEn: settings[`${settingKey}__en`] || "",
+    onChangePt: (v: string) => update(settingKey, v),
+    onChangeEn: (v: string) => update(`${settingKey}__en`, v),
+    englishEnabled,
+    placeholder,
+  };
+  return multiline ? (
+    <BilingualInput as="textarea" rows={rows ?? 4} {...common} />
+  ) : (
+    <BilingualInput {...common} />
+  );
+}
+
 function TextField({
   label,
   value,
@@ -379,28 +418,32 @@ function HomepageTab({ settings, update }: TabProps) {
       <section>
         <h2 className="text-lg font-semibold text-white mb-4">Hero</h2>
         <div className="space-y-4">
-          <TextField
+          <BiField
             label="Título do Hero"
-            value={settings.contentHeroTitle || ""}
-            onChange={(v) => update("contentHeroTitle", v)}
+            settingKey="contentHeroTitle"
+            settings={settings}
+            update={update}
             placeholder="LIT Coimbra"
           />
-          <TextField
+          <BiField
             label="Subtítulo do Hero"
-            value={settings.contentHeroSubtitle || ""}
-            onChange={(v) => update("contentHeroSubtitle", v)}
+            settingKey="contentHeroSubtitle"
+            settings={settings}
+            update={update}
             placeholder="A tua nova casa"
           />
-          <TextField
+          <BiField
             label="Texto do Botão 1 (CTA)"
-            value={settings.contentHeroCTA1Text || ""}
-            onChange={(v) => update("contentHeroCTA1Text", v)}
+            settingKey="contentHeroCTA1Text"
+            settings={settings}
+            update={update}
             placeholder="Reservar Mesa"
           />
-          <TextField
+          <BiField
             label="Texto do Botão 2 (CTA)"
-            value={settings.contentHeroCTA2Text || ""}
-            onChange={(v) => update("contentHeroCTA2Text", v)}
+            settingKey="contentHeroCTA2Text"
+            settings={settings}
+            update={update}
             placeholder="Ver Eventos"
           />
           <ImageUploader
@@ -441,16 +484,18 @@ function HomepageTab({ settings, update }: TabProps) {
           Títulos das Secções
         </h2>
         <div className="space-y-4">
-          <TextField
+          <BiField
             label="Título Secção Eventos"
-            value={settings.contentEventsTitle || ""}
-            onChange={(v) => update("contentEventsTitle", v)}
+            settingKey="contentEventsTitle"
+            settings={settings}
+            update={update}
             placeholder="Eventos"
           />
-          <TextField
+          <BiField
             label="Título Secção Galeria"
-            value={settings.contentGaleriaTitle || ""}
-            onChange={(v) => update("contentGaleriaTitle", v)}
+            settingKey="contentGaleriaTitle"
+            settings={settings}
+            update={update}
             placeholder="Galeria"
           />
         </div>
@@ -471,23 +516,28 @@ function SobreTab({ settings, update }: TabProps) {
           Página Sobre
         </h2>
         <div className="space-y-4">
-          <TextField
+          <BiField
             label="Título da Página"
-            value={settings.contentAboutTitle || ""}
-            onChange={(v) => update("contentAboutTitle", v)}
+            settingKey="contentAboutTitle"
+            settings={settings}
+            update={update}
             placeholder="Sobre"
           />
-          <TextAreaField
+          <BiField
             label="Parágrafo 1"
-            value={settings.contentAboutText1 || ""}
-            onChange={(v) => update("contentAboutText1", v)}
+            settingKey="contentAboutText1"
+            settings={settings}
+            update={update}
+            multiline
             rows={5}
             placeholder="Texto principal sobre o espaço..."
           />
-          <TextAreaField
+          <BiField
             label="Parágrafo 2"
-            value={settings.contentAboutText2 || ""}
-            onChange={(v) => update("contentAboutText2", v)}
+            settingKey="contentAboutText2"
+            settings={settings}
+            update={update}
+            multiline
             rows={5}
             placeholder="Mais detalhes sobre o espaço..."
           />
@@ -523,16 +573,19 @@ function ContactoTab({ settings, update }: TabProps) {
           Página Contacto
         </h2>
         <div className="space-y-4">
-          <TextField
+          <BiField
             label="Título da Secção"
-            value={settings.contentContactTitle || ""}
-            onChange={(v) => update("contentContactTitle", v)}
+            settingKey="contentContactTitle"
+            settings={settings}
+            update={update}
             placeholder="Fala connosco"
           />
-          <TextAreaField
+          <BiField
             label="Descrição"
-            value={settings.contentContactText || ""}
-            onChange={(v) => update("contentContactText", v)}
+            settingKey="contentContactText"
+            settings={settings}
+            update={update}
+            multiline
             rows={3}
             placeholder="Tens alguma questão ou sugestão?..."
           />
@@ -565,16 +618,19 @@ function ReservasTab({ settings, update }: TabProps) {
           Página Reservas
         </h2>
         <div className="space-y-4">
-          <TextField
+          <BiField
             label="Título da Página"
-            value={settings.contentReservasTitle || ""}
-            onChange={(v) => update("contentReservasTitle", v)}
+            settingKey="contentReservasTitle"
+            settings={settings}
+            update={update}
             placeholder="Reserva VIP"
           />
-          <TextAreaField
+          <BiField
             label="Descrição"
-            value={settings.contentReservasText || ""}
-            onChange={(v) => update("contentReservasText", v)}
+            settingKey="contentReservasText"
+            settings={settings}
+            update={update}
+            multiline
             rows={3}
             placeholder="Garante a tua mesa..."
           />
@@ -607,10 +663,11 @@ function RodapeTab({ settings, update }: TabProps) {
           Rodapé (Footer)
         </h2>
         <div className="space-y-4">
-          <TextField
+          <BiField
             label="Texto do Rodapé"
-            value={settings.contentFooterText || ""}
-            onChange={(v) => update("contentFooterText", v)}
+            settingKey="contentFooterText"
+            settings={settings}
+            update={update}
             placeholder="A tua nova casa em Coimbra."
           />
         </div>

@@ -19,6 +19,7 @@ export default function Header({
   scheduleJson,
   logoUrl,
   siteName,
+  englishEnabled = true,
 }: {
   sections: {
     events: boolean;
@@ -30,6 +31,7 @@ export default function Header({
   scheduleJson?: string;
   logoUrl?: string;
   siteName?: string;
+  englishEnabled?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -97,7 +99,7 @@ export default function Header({
               </Link>
             ))}
             {scheduleJson && <OpeningHoursBadge scheduleJson={scheduleJson} compact />}
-            <LocaleSwitcher />
+            <LocaleSwitcher enabled={englishEnabled} />
           </div>
 
           {/* Mobile menu button */}
@@ -133,7 +135,7 @@ export default function Header({
               </div>
             )}
             <div className="pt-2">
-              <LocaleSwitcher />
+              <LocaleSwitcher enabled={englishEnabled} />
             </div>
           </div>
         </div>

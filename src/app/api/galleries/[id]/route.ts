@@ -48,7 +48,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { title, date, eventId, coverImage, published } = body;
+    const { title, titleEn, date, eventId, coverImage, published } = body;
 
     const data: Record<string, unknown> = {};
 
@@ -56,6 +56,7 @@ export async function PUT(
       data.title = title;
       data.slug = slugify(title);
     }
+    if (titleEn !== undefined) data.titleEn = titleEn;
     if (date !== undefined) data.date = new Date(date);
     if (eventId !== undefined) data.eventId = eventId || null;
     if (coverImage !== undefined) data.coverImage = coverImage;

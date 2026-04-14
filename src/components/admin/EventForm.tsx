@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Save, Upload } from "lucide-react";
 import Image from "next/image";
+import BilingualInput from "@/components/admin/BilingualInput";
 
 type EventFormData = {
   id?: string;
   title: string;
+  titleEn?: string;
   description: string;
+  descriptionEn?: string;
   date: string;
   endDate: string;
   image: string;
   lineup: string;
+  lineupEn?: string;
   eventType: string;
   featured: boolean;
   published: boolean;
@@ -20,11 +24,14 @@ type EventFormData = {
 
 const defaultForm: EventFormData = {
   title: "",
+  titleEn: "",
   description: "",
+  descriptionEn: "",
   date: "",
   endDate: "",
   image: "",
   lineup: "",
+  lineupEn: "",
   eventType: "",
   featured: false,
   published: true,
@@ -36,11 +43,22 @@ export default function EventForm({
   initialData?: EventFormData;
 }) {
   const router = useRouter();
-  const [form, setForm] = useState<EventFormData>(initialData || defaultForm);
+  const [form, setForm] = useState<EventFormData>({
+    ...defaultForm,
+    ...(initialData || {}),
+  });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [englishEnabled, setEnglishEnabled] = useState(true);
 
   const isEdit = !!initialData?.id;
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((s) => setEnglishEnabled(s?.localeEnabledEn !== "false"))
+      .catch(() => {});
+  }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -73,11 +91,14 @@ export default function EventForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: form.title,
+          titleEn: form.titleEn?.trim() ? form.titleEn : null,
           description: form.description || null,
+          descriptionEn: form.descriptionEn?.trim() ? form.descriptionEn : null,
           date: new Date(form.date).toISOString(),
           endDate: form.endDate ? new Date(form.endDate).toISOString() : null,
           image: form.image || null,
           lineup: form.lineup || null,
+          lineupEn: form.lineupEn?.trim() ? form.lineupEn : null,
           eventType: form.eventType || null,
           featured: form.featured,
           published: form.published,
@@ -96,16 +117,15 @@ export default function EventForm({
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
       {/* Title */}
-      <div>
-        <label className="block text-sm text-gray-300 mb-2">Título *</label>
-        <input
-          type="text"
-          required
-          value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
-          className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white focus:outline-none focus:border-jungle-500 transition-colors"
-        />
-      </div>
+      <BilingualInput
+        label="Título"
+        required
+        valuePt={form.title}
+        valueEn={form.titleEn || ""}
+        onChangePt={(v) => setForm({ ...form, title: v })}
+        onChangeEn={(v) => setForm({ ...form, titleEn: v })}
+        englishEnabled={englishEnabled}
+      />
 
       {/* Date + End Date */}
       <div className="grid grid-cols-2 gap-4">
@@ -177,28 +197,30 @@ export default function EventForm({
       </div>
 
       {/* Lineup */}
-      <div>
-        <label className="block text-sm text-gray-300 mb-2">Lineup</label>
-        <textarea
-          rows={3}
-          value={form.lineup}
-          onChange={(e) => setForm({ ...form, lineup: e.target.value })}
-          className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white focus:outline-none focus:border-jungle-500 transition-colors resize-none"
-          placeholder="DJ 1, DJ 2..."
-        />
-      </div>
+      <BilingualInput
+        as="textarea"
+        rows={3}
+        label="Lineup"
+        valuePt={form.lineup}
+        valueEn={form.lineupEn || ""}
+        onChangePt={(v) => setForm({ ...form, lineup: v })}
+        onChangeEn={(v) => setForm({ ...form, lineupEn: v })}
+        englishEnabled={englishEnabled}
+        placeholder="DJ 1, DJ 2..."
+      />
 
       {/* Description */}
-      <div>
-        <label className="block text-sm text-gray-300 mb-2">Descrição (HTML)</label>
-        <textarea
-          rows={6}
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white focus:outline-none focus:border-jungle-500 transition-colors resize-none font-mono text-xs"
-          placeholder="<p>Descrição do evento...</p>"
-        />
-      </div>
+      <BilingualInput
+        as="textarea"
+        rows={6}
+        label="Descrição (HTML)"
+        valuePt={form.description}
+        valueEn={form.descriptionEn || ""}
+        onChangePt={(v) => setForm({ ...form, description: v })}
+        onChangeEn={(v) => setForm({ ...form, descriptionEn: v })}
+        englishEnabled={englishEnabled}
+        placeholder="<p>Descrição do evento...</p>"
+      />
 
       {/* Toggles */}
       <div className="flex gap-6">

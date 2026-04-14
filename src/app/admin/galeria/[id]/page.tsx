@@ -36,6 +36,7 @@ export default async function EditGalleryPage({
         initialData={{
           id: gallery.id,
           title: gallery.title,
+          titleEn: gallery.titleEn || "",
           date: new Date(gallery.date).toISOString().split("T")[0],
           eventId: gallery.eventId || "",
           coverImage: gallery.coverImage || "",

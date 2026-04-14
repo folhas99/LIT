@@ -10,7 +10,13 @@ import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import ToastProvider from "@/components/ToastProvider";
 import { I18nProvider } from "@/components/I18nProvider";
 import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES, type Locale } from "@/lib/i18n";
-import { getSettings, isSectionEnabled, defaults as settingsDefaults } from "@/lib/settings";
+import {
+  getSettings,
+  getLocalizedSettings,
+  isEnglishEnabled,
+  isSectionEnabled,
+  defaults as settingsDefaults,
+} from "@/lib/settings";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -72,8 +78,7 @@ export default async function RootLayout({
 
   const cookieStore = await cookies();
   const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value as Locale | undefined;
-  const locale: Locale = cookieLocale && LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
-  const htmlLang = locale === "pt" ? "pt-PT" : "en";
+  let locale: Locale = cookieLocale && LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
 
   let settings;
   let sections = {
@@ -83,9 +88,17 @@ export default async function RootLayout({
     about: true,
     contact: true,
   };
+  let englishEnabled = true;
 
   try {
-    settings = await getSettings();
+    const base = await getSettings();
+    englishEnabled = isEnglishEnabled(base);
+    if (!englishEnabled) locale = DEFAULT_LOCALE;
+
+    settings = locale === "en" && englishEnabled
+      ? await getLocalizedSettings("en")
+      : base;
+
     if (!isAdmin) {
       sections = {
         events: isSectionEnabled(settings, "sectionEvents"),
@@ -98,6 +111,8 @@ export default async function RootLayout({
   } catch {
     settings = { ...settingsDefaults };
   }
+
+  const htmlLang = locale === "pt" ? "pt-PT" : "en";
 
   const plausibleDomain = !isAdmin ? settings?.analyticsPlausibleDomain?.trim() : "";
   const plausibleScript =
@@ -126,7 +141,7 @@ export default async function RootLayout({
         )}
       </head>
       <body className="min-h-full flex flex-col font-sans">
-        <I18nProvider initialLocale={locale}>
+        <I18nProvider initialLocale={locale} englishEnabled={englishEnabled}>
           <ToastProvider />
           {!isAdmin && (
             <a href="#main-content" className="skip-to-content">
@@ -141,6 +156,7 @@ export default async function RootLayout({
               scheduleJson={settings?.scheduleHours}
               logoUrl={settings?.logoUrl}
               siteName={settings?.siteName}
+              englishEnabled={englishEnabled}
             />
           )}
           <main id="main-content" className={!isAdmin ? "flex-1 pt-16 md:pt-20" : "flex-1"}>

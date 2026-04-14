@@ -7,7 +7,8 @@ import { ArrowLeft, Calendar, Clock, Music, Camera } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { logError } from "@/lib/logger";
 import { EventJsonLd } from "@/components/SEO";
-import { getSetting } from "@/lib/settings";
+import { pickLocalized } from "@/lib/settings";
+import { getServerLocale } from "@/lib/server-locale";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -49,6 +50,7 @@ export default async function EventoPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale = await getServerLocale();
   let event;
   try {
     event = await prisma.event.findUnique({
@@ -61,6 +63,15 @@ export default async function EventoPage({
 
   if (!event) notFound();
 
+  const title = pickLocalized(event, "title", locale);
+  const description = pickLocalized(event, "description", locale);
+  const lineup = pickLocalized(event, "lineup", locale);
+  const backLabel = locale === "en" ? "Back to events" : "Voltar aos eventos";
+  const lineupLabel = locale === "en" ? "Lineup" : "Lineup";
+  const viewPhotosLabel = locale === "en" ? "See photos from this event" : "Ver fotos deste evento";
+  const ctaText = locale === "en" ? "Want to secure your spot?" : "Queres garantir o teu lugar?";
+  const ctaButton = locale === "en" ? "Book a Table" : "Reservar Mesa";
+
   return (
     <div className="min-h-screen py-12 md:py-20 px-4">
       <div className="max-w-4xl mx-auto">
@@ -69,7 +80,7 @@ export default async function EventoPage({
           href="/eventos"
           className="inline-flex items-center gap-2 text-jungle-400 hover:text-jungle-300 transition-colors text-sm mb-8"
         >
-          <ArrowLeft size={16} /> Voltar aos eventos
+          <ArrowLeft size={16} /> {backLabel}
         </Link>
 
         {/* Image */}
@@ -77,7 +88,7 @@ export default async function EventoPage({
           <div className="relative aspect-video rounded-sm overflow-hidden mb-8 bg-jungle-800">
             <Image
               src={event.image}
-              alt={event.title}
+              alt={title}
               fill
               className="object-cover"
               priority
@@ -94,7 +105,7 @@ export default async function EventoPage({
             </span>
           )}
           <h1 className="text-3xl md:text-5xl font-bold text-white tracking-wide">
-            {event.title}
+            {title}
           </h1>
 
           <div className="flex flex-wrap gap-4 mt-4 text-gray-400 text-sm">
@@ -114,20 +125,20 @@ export default async function EventoPage({
         </div>
 
         {/* Lineup */}
-        {event.lineup && (
+        {lineup && (
           <div className="mb-8 p-6 bg-jungle-900/50 border border-jungle-700/30 rounded-sm">
             <h2 className="flex items-center gap-2 text-white font-semibold mb-3">
-              <Music size={18} /> Lineup
+              <Music size={18} /> {lineupLabel}
             </h2>
-            <p className="text-gray-300 whitespace-pre-line">{event.lineup}</p>
+            <p className="text-gray-300 whitespace-pre-line">{lineup}</p>
           </div>
         )}
 
         {/* Description */}
-        {event.description && (
+        {description && (
           <div
             className="prose prose-invert prose-sm max-w-none mb-12 text-gray-300 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: event.description }}
+            dangerouslySetInnerHTML={{ __html: description }}
           />
         )}
 
@@ -137,30 +148,30 @@ export default async function EventoPage({
             href={`/galeria/${event.gallery.slug}`}
             className="inline-flex items-center gap-2 px-6 py-3 bg-jungle-800 hover:bg-jungle-700 border border-jungle-600/30 text-white font-semibold tracking-wider uppercase text-sm transition-colors rounded-sm"
           >
-            <Camera size={18} /> Ver fotos deste evento
+            <Camera size={18} /> {viewPhotosLabel}
           </Link>
         )}
 
         {/* CTA */}
         <div className="mt-12 p-8 bg-jungle-900/50 border border-jungle-700/30 rounded-sm text-center">
-          <p className="text-gray-400 mb-4">Queres garantir o teu lugar?</p>
+          <p className="text-gray-400 mb-4">{ctaText}</p>
           <Link
             href="/reservas"
             className="inline-block px-8 py-3 bg-jungle-600 hover:bg-jungle-500 text-white font-semibold tracking-wider uppercase text-sm transition-colors rounded-sm"
           >
-            Reservar Mesa
+            {ctaButton}
           </Link>
         </div>
       </div>
 
       <EventJsonLd
-        name={event.title}
-        description={event.description?.replace(/<[^>]*>/g, "").slice(0, 300) || undefined}
+        name={title}
+        description={description?.replace(/<[^>]*>/g, "").slice(0, 300) || undefined}
         startDate={new Date(event.date).toISOString()}
         endDate={event.endDate ? new Date(event.endDate).toISOString() : undefined}
         image={event.image || undefined}
         url={`${process.env.NEXTAUTH_URL || "http://localhost:2999"}/eventos/${event.slug}`}
-        lineup={event.lineup ? event.lineup.split(/[\n,;]+/) : undefined}
+        lineup={lineup ? lineup.split(/[\n,;]+/) : undefined}
         location={{
           name: "LIT Coimbra",
           address: "Coimbra, Portugal",

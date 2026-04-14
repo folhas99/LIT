@@ -51,6 +51,7 @@ export type SiteSettings = {
   logoUrl: string;
   analyticsPlausibleDomain: string;
   analyticsPlausibleScript: string;
+  localeEnabledEn: string; // "true" | "false"
   scheduleHours: string; // JSON: { mon: null | [open, close], tue: ..., ... } time as "HH:MM"
   mapLatitude: string;
   mapLongitude: string;
@@ -107,6 +108,7 @@ export const defaults: SiteSettings = {
   logoUrl: "",
   analyticsPlausibleDomain: "",
   analyticsPlausibleScript: "https://plausible.io/js/script.js",
+  localeEnabledEn: "true",
   // Default: Wed-Sat 23:00-06:00
   scheduleHours: JSON.stringify({
     mon: null,
@@ -149,4 +151,79 @@ export function isSectionEnabled(
   section: keyof SiteSettings
 ): boolean {
   return settings[section] !== "false";
+}
+
+/**
+ * Set of SiteSettings keys that represent user-facing textual content that
+ * can be translated. The corresponding EN value is stored under `${key}__en`.
+ */
+export const TRANSLATABLE_SETTING_KEYS = [
+  "siteName",
+  "siteDescription",
+  "heroTitle",
+  "heroSubtitle",
+  "schedule",
+  "contentHeroTitle",
+  "contentHeroSubtitle",
+  "contentHeroCTA1Text",
+  "contentHeroCTA2Text",
+  "contentAboutTitle",
+  "contentAboutText1",
+  "contentAboutText2",
+  "contentContactTitle",
+  "contentContactText",
+  "contentReservasTitle",
+  "contentReservasText",
+  "contentEventsTitle",
+  "contentGaleriaTitle",
+  "contentFooterText",
+] as const satisfies readonly (keyof SiteSettings)[];
+
+export type TranslatableSettingKey = (typeof TRANSLATABLE_SETTING_KEYS)[number];
+
+export function enSettingKey(key: TranslatableSettingKey): string {
+  return `${key}__en`;
+}
+
+export function isEnglishEnabled(settings: SiteSettings): boolean {
+  return settings.localeEnabledEn !== "false";
+}
+
+/**
+ * Returns a SiteSettings object where translatable keys are resolved to the
+ * English value when `locale === "en"` and an EN override exists; otherwise
+ * falls back to the Portuguese value.
+ */
+export async function getLocalizedSettings(
+  locale: "pt" | "en"
+): Promise<SiteSettings> {
+  const base = await getSettings();
+  if (locale !== "en" || !isEnglishEnabled(base)) return base;
+
+  const enRows = await prisma.siteSetting.findMany({
+    where: { key: { in: TRANSLATABLE_SETTING_KEYS.map((k) => enSettingKey(k)) } },
+  });
+  const enMap = new Map(enRows.map((r) => [r.key, r.value] as const));
+
+  const out: SiteSettings = { ...base };
+  for (const k of TRANSLATABLE_SETTING_KEYS) {
+    const v = enMap.get(enSettingKey(k));
+    if (v && v.trim()) (out as Record<string, string>)[k] = v;
+  }
+  return out;
+}
+
+/**
+ * Given an Event-like or Gallery-like record with both PT and EN variants,
+ * pick the EN value when locale === "en" and it's non-empty, else PT.
+ */
+export function pickLocalized<T extends { [key: string]: unknown }>(
+  record: T,
+  field: string,
+  locale: "pt" | "en"
+): string {
+  const pt = (record[field] as string | null | undefined) ?? "";
+  if (locale !== "en") return pt;
+  const en = (record[`${field}En`] as string | null | undefined) ?? "";
+  return en.trim() ? en : pt;
 }

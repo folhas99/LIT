@@ -3,8 +3,16 @@
 import { useI18n } from "@/components/I18nProvider";
 import type { Locale } from "@/lib/i18n";
 
-export default function LocaleSwitcher({ className = "" }: { className?: string }) {
+export default function LocaleSwitcher({
+  className = "",
+  enabled = true,
+}: {
+  className?: string;
+  enabled?: boolean;
+}) {
   const { locale, setLocale } = useI18n();
+
+  if (!enabled) return null;
 
   const handleClick = (l: Locale) => {
     if (l === locale) return;

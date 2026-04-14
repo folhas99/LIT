@@ -1,5 +1,6 @@
 import { MapPin, Clock, Mail, Phone } from "lucide-react";
-import { getSettings } from "@/lib/settings";
+import { defaults as settingsDefaults } from "@/lib/settings";
+import { getLocaleAndSettings } from "@/lib/server-locale";
 import { logError } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import SectionRenderer from "@/components/sections/SectionRenderer";
@@ -18,9 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function SobrePage() {
   let settings;
+  let locale: "pt" | "en" = "pt";
   let sections: { id: string; page: string; type: string; content: string; order: number; visible: boolean; spacing: string | null }[] = [];
   try {
-    settings = await getSettings();
+    const ctx = await getLocaleAndSettings();
+    settings = ctx.settings;
+    locale = ctx.locale;
     try {
       sections = await prisma.pageSection.findMany({
         where: { page: "sobre", visible: true },
@@ -29,30 +33,33 @@ export default async function SobrePage() {
     } catch { /* table might not exist */ }
   } catch (error) {
     logError("sobre/page", error);
-    settings = {
-      siteName: "LIT Coimbra",
-      siteDescription: "A tua nova casa! Discoteca em Coimbra.",
-      address: "Coimbra, Portugal",
-      phone: "",
-      email: "info@litcoimbra.pt",
-      instagram: "https://www.instagram.com/lit.coimbra/",
-      facebook: "",
-      tiktok: "",
-      schedule: "Quarta a Sábado, 23:00 - 06:00",
-      heroTitle: "LIT Coimbra",
-      heroSubtitle: "A tua nova casa",
-      heroImage: "",
-      heroVideo: "",
-      sectionEvents: "true",
-      sectionGallery: "true",
-      sectionReservations: "true",
-      sectionAbout: "true",
-      sectionContact: "true",
-    };
+    settings = { ...settingsDefaults };
   }
 
   const beforeSections = sections.filter((s) => s.order < 0);
   const afterSections = sections.filter((s) => s.order >= 0);
+
+  const t = locale === "en"
+    ? {
+        heading: "About",
+        introStrong: "LIT Coimbra",
+        introRest: " is where the night comes to life. A unique atmosphere where music, people and energy meet to create unforgettable nights.",
+        body: "Inspired by nature and the essence of nightlife, LIT is your new home in Coimbra. A space decorated with natural elements that creates a welcoming yet vibrant atmosphere.",
+        location: "Location",
+        hours: "Hours",
+        email: "Email",
+        phone: "Phone",
+      }
+    : {
+        heading: "Sobre",
+        introStrong: "LIT Coimbra",
+        introRest: " é o espaço onde a noite ganha vida. Um ambiente único onde a música, as pessoas e a energia se encontram para criar noites inesquecíveis.",
+        body: "Inspirado pela natureza e pela essência da vida noturna, o LIT é a tua nova casa em Coimbra. Um espaço decorado com elementos naturais que cria uma atmosfera acolhedora e ao mesmo tempo vibrante.",
+        location: "Localização",
+        hours: "Horário",
+        email: "Email",
+        phone: "Telefone",
+      };
 
   return (
     <div className="min-h-screen py-12 md:py-20 px-4">
@@ -60,7 +67,7 @@ export default async function SobrePage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white tracking-wide animate-fade-in">
-            Sobre
+            {t.heading}
           </h1>
           <div className="mt-3 w-20 h-0.5 bg-gradient-to-r from-jungle-500 to-neon-green/50" />
         </div>
@@ -69,14 +76,11 @@ export default async function SobrePage() {
         <section className="mb-16 animate-fade-in-up">
           <div className="max-w-2xl">
             <p className="text-xl text-gray-300 leading-relaxed mb-6">
-              O <strong className="text-white">LIT Coimbra</strong> é o espaço onde a noite ganha vida.
-              Um ambiente único onde a música, as pessoas e a energia se encontram para criar noites inesquecíveis.
+              {locale === "en" ? "" : "O "}
+              <strong className="text-white">{t.introStrong}</strong>
+              {t.introRest}
             </p>
-            <p className="text-gray-400 leading-relaxed">
-              Inspirado pela natureza e pela essência da vida noturna, o LIT é a tua nova casa
-              em Coimbra. Um espaço decorado com elementos naturais que cria uma atmosfera
-              acolhedora e ao mesmo tempo vibrante.
-            </p>
+            <p className="text-gray-400 leading-relaxed">{t.body}</p>
           </div>
         </section>
 
@@ -88,7 +92,7 @@ export default async function SobrePage() {
                 <div className="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center group-hover:bg-jungle-700 transition-colors duration-300">
                   <MapPin size={18} className="text-jungle-400 group-hover:text-neon-green/70 transition-colors duration-300" />
                 </div>
-                <h3 className="text-white font-semibold">Localização</h3>
+                <h3 className="text-white font-semibold">{t.location}</h3>
               </div>
               <p className="text-gray-400 text-sm">{settings.address}</p>
             </div>
@@ -100,7 +104,7 @@ export default async function SobrePage() {
                 <div className="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center group-hover:bg-jungle-700 transition-colors duration-300">
                   <Clock size={18} className="text-jungle-400 group-hover:text-neon-green/70 transition-colors duration-300" />
                 </div>
-                <h3 className="text-white font-semibold">Horário</h3>
+                <h3 className="text-white font-semibold">{t.hours}</h3>
               </div>
               <p className="text-gray-400 text-sm">{settings.schedule}</p>
             </div>
@@ -112,7 +116,7 @@ export default async function SobrePage() {
                 <div className="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center group-hover:bg-jungle-700 transition-colors duration-300">
                   <Mail size={18} className="text-jungle-400 group-hover:text-neon-green/70 transition-colors duration-300" />
                 </div>
-                <h3 className="text-white font-semibold">Email</h3>
+                <h3 className="text-white font-semibold">{t.email}</h3>
               </div>
               <a href={`mailto:${settings.email}`} className="text-jungle-400 hover:text-neon-green/70 text-sm transition-colors duration-300">
                 {settings.email}
@@ -126,7 +130,7 @@ export default async function SobrePage() {
                 <div className="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center group-hover:bg-jungle-700 transition-colors duration-300">
                   <Phone size={18} className="text-jungle-400 group-hover:text-neon-green/70 transition-colors duration-300" />
                 </div>
-                <h3 className="text-white font-semibold">Telefone</h3>
+                <h3 className="text-white font-semibold">{t.phone}</h3>
               </div>
               <a href={`tel:${settings.phone}`} className="text-jungle-400 hover:text-neon-green/70 text-sm transition-colors duration-300">
                 {settings.phone}

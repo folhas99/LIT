@@ -1,25 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, CheckCircle } from "lucide-react";
+import { Save, CheckCircle, Globe2 } from "lucide-react";
 import { DAY_KEYS, DAY_LABELS, parseSchedule, type DayKey, type ScheduleMap } from "@/lib/schedule";
+import BilingualInput from "@/components/admin/BilingualInput";
 
 type Settings = Record<string, string>;
 
-const settingsFields = [
-  { key: "siteName", label: "Nome do Site", type: "text" },
-  { key: "siteDescription", label: "Descrição do Site", type: "text" },
-  { key: "heroTitle", label: "Título do Hero", type: "text" },
-  { key: "heroSubtitle", label: "Subtítulo do Hero", type: "text" },
+// Fields that are plain (non-translatable) text inputs.
+const plainSettingsFields = [
   { key: "heroVideo", label: "URL do Vídeo Hero", type: "text" },
   { key: "heroImage", label: "URL da Imagem Hero", type: "text" },
   { key: "address", label: "Morada", type: "text" },
   { key: "phone", label: "Telefone", type: "text" },
   { key: "email", label: "Email", type: "text" },
-  { key: "schedule", label: "Horário", type: "text" },
   { key: "instagram", label: "Instagram URL", type: "text" },
   { key: "facebook", label: "Facebook URL", type: "text" },
   { key: "tiktok", label: "TikTok URL", type: "text" },
+];
+
+// Fields that support PT + EN variants (EN stored as `${key}__en`).
+const bilingualSettingsFields = [
+  { key: "siteName", label: "Nome do Site" },
+  { key: "siteDescription", label: "Descrição do Site" },
+  { key: "heroTitle", label: "Título do Hero" },
+  { key: "heroSubtitle", label: "Subtítulo do Hero" },
+  { key: "schedule", label: "Horário (texto)" },
 ];
 
 const sectionToggles = [
@@ -74,11 +80,56 @@ export default function AdminDefinicoesPage() {
       <h1 className="text-2xl font-bold text-white mb-8">Definições</h1>
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-8">
+        {/* Languages */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <Globe2 size={20} className="text-jungle-400" />
+            <h2 className="text-lg font-semibold text-white">Idiomas</h2>
+          </div>
+          <p className="text-gray-500 text-sm mb-4">
+            Ativa o inglês para mostrar o seletor PT/EN no site e editar os textos
+            em ambas as línguas. Se desativado, o site fica só em português.
+          </p>
+          <label className="flex items-center justify-between p-3 bg-jungle-900/50 border border-jungle-700/30 rounded-sm cursor-pointer hover:bg-jungle-800/50 transition-colors">
+            <span className="text-gray-300 text-sm">Inglês ativo</span>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={settings.localeEnabledEn !== "false"}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    localeEnabledEn: e.target.checked ? "true" : "false",
+                  })
+                }
+                className="sr-only peer"
+              />
+              <div className="w-10 h-5 bg-jungle-700 rounded-full peer-checked:bg-jungle-500 transition-colors" />
+              <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full peer-checked:translate-x-5 transition-transform" />
+            </div>
+          </label>
+        </section>
+
         {/* General settings */}
         <section>
           <h2 className="text-lg font-semibold text-white mb-4">Geral</h2>
           <div className="space-y-4">
-            {settingsFields.map((field) => (
+            {bilingualSettingsFields.map((field) => (
+              <BilingualInput
+                key={field.key}
+                label={field.label}
+                valuePt={settings[field.key] || ""}
+                valueEn={settings[`${field.key}__en`] || ""}
+                onChangePt={(v) =>
+                  setSettings({ ...settings, [field.key]: v })
+                }
+                onChangeEn={(v) =>
+                  setSettings({ ...settings, [`${field.key}__en`]: v })
+                }
+                englishEnabled={settings.localeEnabledEn !== "false"}
+              />
+            ))}
+            {plainSettingsFields.map((field) => (
               <div key={field.key}>
                 <label className="block text-sm text-gray-300 mb-1.5">
                   {field.label}

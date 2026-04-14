@@ -2,10 +2,56 @@
 
 import { useState, useEffect } from "react";
 import { Send, CheckCircle, AlertCircle, Crown } from "lucide-react";
+import { useI18n } from "@/components/I18nProvider";
 
 type EventOption = { id: string; title: string; date: string };
 
 export default function ReservasPage() {
+  const { locale } = useI18n();
+  const t = locale === "en"
+    ? {
+        experienceTag: "VIP Experience",
+        heading: "VIP Reservations",
+        subtitle: "Reserve your table and secure an exclusive experience.",
+        name: "Name",
+        namePlaceholder: "Your name",
+        email: "Email",
+        phone: "Phone",
+        date: "Date",
+        guests: "Number of Guests",
+        eventOptional: "Event (optional)",
+        noEvent: "No specific event",
+        messageOptional: "Message (optional)",
+        messagePlaceholder: "Special requests, celebrations...",
+        submit: "Send Reservation",
+        submitting: "Sending...",
+        successTitle: "Reservation Sent!",
+        successBody: "Thank you! Your reservation was sent successfully. We'll be in touch shortly to confirm.",
+        newReservation: "New Reservation",
+        errorFallback: "Error sending reservation",
+      }
+    : {
+        experienceTag: "Experiência VIP",
+        heading: "Reservas VIP",
+        subtitle: "Reserva a tua mesa e garante uma experiência exclusiva.",
+        name: "Nome",
+        namePlaceholder: "O teu nome",
+        email: "Email",
+        phone: "Telefone",
+        date: "Data",
+        guests: "N.º de Pessoas",
+        eventOptional: "Evento (opcional)",
+        noEvent: "Sem evento específico",
+        messageOptional: "Mensagem (opcional)",
+        messagePlaceholder: "Pedidos especiais, celebrações...",
+        submit: "Enviar Reserva",
+        submitting: "A enviar...",
+        successTitle: "Reserva Enviada!",
+        successBody: "Obrigado! A tua reserva foi enviada com sucesso. Entraremos em contacto brevemente para confirmar.",
+        newReservation: "Nova Reserva",
+        errorFallback: "Erro ao enviar reserva",
+      };
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -45,14 +91,14 @@ export default function ReservasPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Erro ao enviar reserva");
+        throw new Error(data.error || t.errorFallback);
       }
 
       setStatus("success");
       setForm({ name: "", email: "", phone: "", date: "", guests: 2, message: "", eventId: "", website: "" });
     } catch (err) {
       setStatus("error");
-      setErrorMsg(err instanceof Error ? err.message : "Erro ao enviar reserva");
+      setErrorMsg(err instanceof Error ? err.message : t.errorFallback);
     }
   };
 
@@ -64,15 +110,13 @@ export default function ReservasPage() {
             <CheckCircle size={64} className="mx-auto text-neon-green/80" />
             <div className="absolute inset-0 animate-pulse-glow rounded-full" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4">Reserva Enviada!</h1>
-          <p className="text-gray-400 mb-8">
-            Obrigado! A tua reserva foi enviada com sucesso. Entraremos em contacto brevemente para confirmar.
-          </p>
+          <h1 className="text-3xl font-bold text-white mb-4">{t.successTitle}</h1>
+          <p className="text-gray-400 mb-8">{t.successBody}</p>
           <button
             onClick={() => setStatus("idle")}
             className="px-6 py-3 bg-jungle-600 hover:bg-jungle-500 text-white font-semibold tracking-wider uppercase text-sm transition-all duration-300 rounded-sm hover:shadow-[0_0_20px_rgba(57,255,20,0.15)]"
           >
-            Nova Reserva
+            {t.newReservation}
           </button>
         </div>
       </div>
@@ -89,15 +133,13 @@ export default function ReservasPage() {
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-2">
             <Crown size={20} className="text-accent-gold" />
-            <span className="text-xs uppercase tracking-widest vip-badge font-bold">Experiência VIP</span>
+            <span className="text-xs uppercase tracking-widest vip-badge font-bold">{t.experienceTag}</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white tracking-wide animate-fade-in">
-            Reservas VIP
+            {t.heading}
           </h1>
           <div className="mt-3 w-20 h-0.5 bg-gradient-to-r from-accent-gold/80 to-accent-gold/20" />
-          <p className="mt-4 text-gray-400 text-lg">
-            Reserva a tua mesa e garante uma experiência exclusiva.
-          </p>
+          <p className="mt-4 text-gray-400 text-lg">{t.subtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -116,7 +158,7 @@ export default function ReservasPage() {
           {/* Name */}
           <div className="animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
             <label htmlFor="name" className="block text-sm text-gray-300 mb-2">
-              Nome *
+              {t.name} *
             </label>
             <input
               id="name"
@@ -125,7 +167,7 @@ export default function ReservasPage() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white placeholder-gray-500 focus:outline-none focus:border-jungle-500 form-input-premium"
-              placeholder="O teu nome"
+              placeholder={t.namePlaceholder}
             />
           </div>
 
@@ -133,7 +175,7 @@ export default function ReservasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
             <div>
               <label htmlFor="email" className="block text-sm text-gray-300 mb-2">
-                Email *
+                {t.email} *
               </label>
               <input
                 id="email"
@@ -147,7 +189,7 @@ export default function ReservasPage() {
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm text-gray-300 mb-2">
-                Telefone *
+                {t.phone} *
               </label>
               <input
                 id="phone"
@@ -165,7 +207,7 @@ export default function ReservasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
             <div>
               <label htmlFor="date" className="block text-sm text-gray-300 mb-2">
-                Data *
+                {t.date} *
               </label>
               <input
                 id="date"
@@ -178,7 +220,7 @@ export default function ReservasPage() {
             </div>
             <div>
               <label htmlFor="guests" className="block text-sm text-gray-300 mb-2">
-                N.º de Pessoas *
+                {t.guests} *
               </label>
               <input
                 id="guests"
@@ -197,7 +239,7 @@ export default function ReservasPage() {
           {events.length > 0 && (
             <div className="animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
               <label htmlFor="event" className="block text-sm text-gray-300 mb-2">
-                Evento (opcional)
+                {t.eventOptional}
               </label>
               <select
                 id="event"
@@ -205,7 +247,7 @@ export default function ReservasPage() {
                 onChange={(e) => setForm({ ...form, eventId: e.target.value })}
                 className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white focus:outline-none focus:border-jungle-500 form-input-premium"
               >
-                <option value="">Sem evento específico</option>
+                <option value="">{t.noEvent}</option>
                 {events.map((ev) => (
                   <option key={ev.id} value={ev.id}>
                     {ev.title}
@@ -218,7 +260,7 @@ export default function ReservasPage() {
           {/* Message */}
           <div className="animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
             <label htmlFor="message" className="block text-sm text-gray-300 mb-2">
-              Mensagem (opcional)
+              {t.messageOptional}
             </label>
             <textarea
               id="message"
@@ -226,7 +268,7 @@ export default function ReservasPage() {
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
               className="w-full px-4 py-3 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white placeholder-gray-500 focus:outline-none focus:border-jungle-500 form-input-premium resize-none"
-              placeholder="Pedidos especiais, celebrações..."
+              placeholder={t.messagePlaceholder}
             />
           </div>
 
@@ -244,7 +286,7 @@ export default function ReservasPage() {
             className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-jungle-600 hover:bg-jungle-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold tracking-wider uppercase text-sm transition-all duration-300 rounded-sm animate-pulse-glow hover:shadow-[0_0_25px_rgba(57,255,20,0.2)]"
           >
             <Send size={18} />
-            {status === "loading" ? "A enviar..." : "Enviar Reserva"}
+            {status === "loading" ? t.submitting : t.submit}
           </button>
         </form>
       </div>

@@ -1,6 +1,6 @@
 import { Mail, MapPin, Phone } from "lucide-react";
 import { InstagramIcon, FacebookIcon } from "@/components/ui/SocialIcons";
-import { getSettings } from "@/lib/settings";
+import { getLocaleAndSettings } from "@/lib/server-locale";
 import { logError } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import SectionRenderer from "@/components/sections/SectionRenderer";
@@ -21,9 +21,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ContactoPage() {
   let settings;
+  let locale: "pt" | "en" = "pt";
   let sections: { id: string; page: string; type: string; content: string; order: number; visible: boolean; spacing: string | null }[] = [];
   try {
-    settings = await getSettings();
+    const ctx = await getLocaleAndSettings();
+    settings = ctx.settings;
+    locale = ctx.locale;
     try {
       sections = await prisma.pageSection.findMany({
         where: { page: "contacto", visible: true },
@@ -39,6 +42,20 @@ export default async function ContactoPage() {
   const beforeSections = sections.filter((s) => s.order < 0);
   const afterSections = sections.filter((s) => s.order >= 0);
 
+  const t = locale === "en"
+    ? {
+        heading: "Contact",
+        talkToUs: "Talk to us",
+        intro: "Got a question or suggestion? Reach out through the channels below.",
+        whereWeAre: "Where we are",
+      }
+    : {
+        heading: "Contacto",
+        talkToUs: "Fala connosco",
+        intro: "Tens alguma questão ou sugestão? Entra em contacto através dos seguintes meios.",
+        whereWeAre: "Onde estamos",
+      };
+
   return (
     <div className="min-h-screen py-12 md:py-20 px-4 relative">
       {beforeSections.length > 0 && <SectionRenderer sections={beforeSections} />}
@@ -49,7 +66,7 @@ export default async function ContactoPage() {
       <div className="max-w-5xl mx-auto relative">
         <div className="mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white tracking-wide animate-fade-in">
-            Contacto
+            {t.heading}
           </h1>
           <div className="mt-3 w-20 h-0.5 bg-gradient-to-r from-jungle-500 to-neon-green/50" />
         </div>
@@ -58,11 +75,9 @@ export default async function ContactoPage() {
           {/* Info */}
           <div className="animate-fade-in-up">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Fala connosco
+              {t.talkToUs}
             </h2>
-            <p className="text-gray-400 mb-8">
-              Tens alguma questão ou sugestão? Entra em contacto através dos seguintes meios.
-            </p>
+            <p className="text-gray-400 mb-8">{t.intro}</p>
 
             <div className="space-y-4">
               {settings.email && (
@@ -136,7 +151,7 @@ export default async function ContactoPage() {
           return (
             <div className="mt-16 animate-fade-in-up">
               <h2 className="text-xl font-semibold text-jungle-400 uppercase tracking-wider mb-4">
-                Onde estamos
+                {t.whereWeAre}
               </h2>
               <ContactMap lat={lat} lng={lng} label={settings.siteName || "LIT Coimbra"} />
             </div>
