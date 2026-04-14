@@ -9,7 +9,9 @@ const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as { role?: string }).role !== "SUPER_ADMIN") {
+    // Any authenticated admin can list the media library (SUPER_ADMIN or ADMIN),
+    // because the media picker is used across the whole admin editor.
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

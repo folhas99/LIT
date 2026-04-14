@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RichTextEditor from "@/components/admin/RichTextEditor";
+import MediaPicker, { MediaField } from "@/components/admin/MediaPicker";
 
 /* ================================================================== */
 /* Types                                                               */
@@ -833,11 +834,11 @@ function HeroEditor({ content, onUpdate }: EditorProps) {
         onChange={(v) => onUpdate("subtitle", v)}
         placeholder="Subtítulo do hero"
       />
-      <FieldInput
-        label="Imagem de Fundo (URL)"
+      <MediaField
+        label="Imagem de Fundo"
         value={String(content.bgImage || "")}
         onChange={(v) => onUpdate("bgImage", v)}
-        placeholder="https://..."
+        placeholder="URL ou escolher da biblioteca..."
       />
       <div className="grid grid-cols-2 gap-4">
         <FieldInput
@@ -897,19 +898,32 @@ function TextEditor({ content, onUpdate }: EditorProps) {
 /* ---------- Image Gallery ---------- */
 
 function ImageGalleryEditor({ content, onUpdate }: EditorProps) {
-  const images = (Array.isArray(content.images) ? content.images : [""]) as string[];
+  const rawImages = (Array.isArray(content.images) ? content.images : []) as string[];
+  // Keep only non-empty values in the rendered list; the editor no longer
+  // needs a trailing empty input because we have a proper picker.
+  const images = rawImages.filter(Boolean);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
 
-  const updateImage = (idx: number, val: string) => {
-    const newImages = [...images];
-    newImages[idx] = val;
-    onUpdate("images", newImages);
+  const commit = (list: string[]) => {
+    onUpdate("images", list.length ? list : [""]);
   };
 
-  const addImage = () => onUpdate("images", [...images, ""]);
+  const removeImage = (idx: number) => commit(images.filter((_, i) => i !== idx));
 
-  const removeImage = (idx: number) => {
-    const newImages = images.filter((_, i) => i !== idx);
-    onUpdate("images", newImages.length ? newImages : [""]);
+  const moveImage = (idx: number, dir: -1 | 1) => {
+    const target = idx + dir;
+    if (target < 0 || target >= images.length) return;
+    const next = [...images];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    commit(next);
+  };
+
+  const addFromUrl = () => {
+    const v = urlInput.trim();
+    if (!v) return;
+    commit([...images, v]);
+    setUrlInput("");
   };
 
   return (
@@ -920,32 +934,98 @@ function ImageGalleryEditor({ content, onUpdate }: EditorProps) {
         onChange={(v) => onUpdate("title", v)}
       />
       <div>
-        <label className="block text-sm text-gray-300 mb-1.5">Imagens</label>
-        <div className="space-y-2">
-          {images.map((img, idx) => (
-            <div key={idx} className="flex gap-2">
-              <input
-                type="text"
-                value={img}
-                onChange={(e) => updateImage(idx, e.target.value)}
-                placeholder="URL da imagem"
-                className="flex-1 px-4 py-2.5 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white text-sm focus:outline-none focus:border-jungle-500 transition-colors"
-              />
-              <button
-                onClick={() => removeImage(idx)}
-                className="px-2 text-gray-500 hover:text-red-400 transition-colors"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="block text-sm text-gray-300">
+            Imagens {images.length > 0 && <span className="text-gray-500">({images.length})</span>}
+          </label>
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-jungle-700/60 hover:bg-jungle-600 border border-jungle-700/50 text-white text-xs rounded-sm transition-colors"
+          >
+            <Image size={13} /> Escolher da biblioteca
+          </button>
         </div>
-        <button
-          onClick={addImage}
-          className="mt-2 text-sm text-jungle-400 hover:text-jungle-300 flex items-center gap-1"
-        >
-          <Plus size={14} /> Adicionar imagem
-        </button>
+
+        {images.length === 0 ? (
+          <div className="px-4 py-6 border border-dashed border-jungle-700/40 rounded-sm text-center text-gray-500 text-sm">
+            Sem imagens. Clica em <span className="text-jungle-300">Escolher da biblioteca</span> ou cola um URL abaixo.
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {images.map((img, idx) => (
+              <div
+                key={`${img}-${idx}`}
+                className="group relative aspect-square rounded-sm overflow-hidden border border-jungle-700/40 bg-jungle-900"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img} alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-jungle-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveImage(idx, -1)}
+                    disabled={idx === 0}
+                    className="p-1 bg-jungle-700/80 hover:bg-jungle-600 disabled:opacity-30 text-white rounded-sm"
+                    title="Mover para trás"
+                  >
+                    <ChevronUp size={14} className="-rotate-90" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveImage(idx, 1)}
+                    disabled={idx === images.length - 1}
+                    className="p-1 bg-jungle-700/80 hover:bg-jungle-600 disabled:opacity-30 text-white rounded-sm"
+                    title="Mover para a frente"
+                  >
+                    <ChevronDown size={14} className="-rotate-90" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    className="p-1 bg-red-900/80 hover:bg-red-800 text-white rounded-sm"
+                    title="Remover"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Quick-add by URL */}
+        <div className="flex gap-2 mt-3">
+          <input
+            type="text"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addFromUrl();
+              }
+            }}
+            placeholder="Colar URL externo..."
+            className="flex-1 px-3 py-2 bg-jungle-950 border border-jungle-700/50 rounded-sm text-white text-xs focus:outline-none focus:border-jungle-500 transition-colors"
+          />
+          <button
+            type="button"
+            onClick={addFromUrl}
+            disabled={!urlInput.trim()}
+            className="px-3 py-2 bg-jungle-700/60 hover:bg-jungle-600 disabled:opacity-40 text-white text-xs rounded-sm transition-colors inline-flex items-center gap-1"
+          >
+            <Plus size={12} /> Adicionar URL
+          </button>
+        </div>
+
+        <MediaPicker
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          multiple
+          initialSelected={images}
+          onSelect={(urls) => commit(urls)}
+          title="Escolher imagens da galeria"
+        />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <FieldSelect
@@ -1155,11 +1235,11 @@ function ColumnsEditor({ content, onUpdate }: EditorProps) {
               onChange={(v) => updateItem(idx, "text", v)}
               rows={3}
             />
-            <FieldInput
-              label="Imagem (URL)"
+            <MediaField
+              label="Imagem"
               value={item.image || ""}
               onChange={(v) => updateItem(idx, "image", v)}
-              placeholder="https://..."
+              placeholder="URL ou escolher da biblioteca..."
             />
           </div>
         ))}
