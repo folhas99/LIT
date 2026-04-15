@@ -17,6 +17,7 @@ import {
   Globe,
   EyeIcon,
   LayoutList,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -114,6 +115,28 @@ export default function PaginasPage() {
       fetchPages();
     } catch {
       setError("Erro ao alterar estado");
+    }
+  };
+
+  const handleReseed = async (p: PageRow) => {
+    if (!p.system) return;
+    if (
+      !window.confirm(
+        `Restaurar o layout default de "${p.title}"?\n\nIsto substitui todas as ${p.sectionCount} secções atuais pelo layout original. Esta ação não pode ser anulada.`
+      )
+    )
+      return;
+    try {
+      const res = await fetch(`/api/pages/${p.id}/reseed`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Erro ao restaurar");
+      }
+      const data = await res.json();
+      flashSuccess(`Layout restaurado (${data.sectionsCreated} secções)`);
+      fetchPages();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao restaurar");
     }
   };
 
@@ -253,6 +276,15 @@ export default function PaginasPage() {
                   >
                     <ExternalLink size={14} />
                   </a>
+                  {p.system && (
+                    <button
+                      onClick={() => handleReseed(p)}
+                      className="p-2 text-gray-500 hover:text-jungle-300 transition-colors"
+                      title="Restaurar layout default"
+                    >
+                      <RotateCcw size={14} />
+                    </button>
+                  )}
                   {!p.system && (
                     <button
                       onClick={() => handleDelete(p)}
