@@ -11,6 +11,7 @@
     "db:migrate": "npx prisma migrate dev",
     "db:push": "npx prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
+    "db:reseed-pages": "npx tsx prisma/reseed-system-pages.ts",
     "db:studio": "npx prisma studio",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"

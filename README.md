@@ -73,12 +73,26 @@ Inclui PostgreSQL com volume persistente e volume `uploads` para imagens carrega
 ## Scripts
 
 ```bash
-npm run dev          # dev server (Turbopack)
-npm run build        # build de produção
-npm run start        # serve build
-npx tsc --noEmit     # typecheck
-npx prisma studio    # GUI da DB
+npm run dev              # dev server (Turbopack)
+npm run build            # build de produção
+npm run start            # serve build
+npx tsc --noEmit         # typecheck
+npm run db:studio        # GUI da DB
+npm run db:seed          # seed inicial (idempotente — só cria secções em páginas vazias)
+npm run db:reseed-pages  # RESET destrutivo das páginas de sistema para os layouts default
 ```
+
+### Reseed das páginas de sistema
+
+O `db:seed` só insere secções default em páginas que ainda estão vazias — instalações existentes mantêm o conteúdo editado. Para forçar as páginas de sistema (`homepage`, `eventos`, `galeria`, `reservas`, `sobre`, `contacto`) a voltar aos layouts default:
+
+```bash
+npm run db:reseed-pages                       # todas as páginas de sistema
+npx tsx prisma/reseed-system-pages.ts --only=homepage,sobre
+npx tsx prisma/reseed-system-pages.ts --dry-run
+```
+
+> ⚠️ Apaga todas as secções dessas páginas antes de recriar. Usar apenas após push de novos layouts.
 
 ## Estrutura
 
