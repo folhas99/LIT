@@ -36,11 +36,14 @@ CMS e site público da discoteca LIT Coimbra, construído em Next.js 16 (App Rou
 - **Gestão**: Eventos · Galerias · Reservas · Mensagens · Utilizadores · Logs · Definições
 
 ### Tipos de secção disponíveis
-Hero, Page Header, Texto, Imagem (galeria), CTA, Divisor, Espaçador, Embed, Colunas, Testemunhos, Countdown, Hero Homepage, Próximo Evento, Pré-visualização/Grelha de Eventos, Pré-visualização/Grelha de Galerias, CTA/Info/Form/Mapa de Contacto, Formulário de Reservas, Cartões Informativos, Cabeçalho, Caixa de Ícones, Acordeão/FAQ, Estatísticas (contadores animados), **Separadores (tabs), Tabela de Preços, Grupo de Botões, Logos / Parceiros**.
+Hero, Page Header, Texto, Imagem (galeria), CTA, Divisor, Espaçador, Embed, Colunas, Testemunhos, Countdown, Hero Homepage, Próximo Evento, Pré-visualização/Grelha de Eventos, Pré-visualização/Grelha de Galerias, CTA/Info/Form/Mapa de Contacto, Formulário de Reservas, Cartões Informativos, Cabeçalho, Caixa de Ícones, Acordeão/FAQ, Estatísticas (contadores animados), Separadores (tabs), Tabela de Preços, Grupo de Botões, Logos / Parceiros, **Vídeo (YouTube/Vimeo/MP4), Marquee / Ticker**.
 
 Cada secção suporta:
 - Bilingue (PT/EN)
-- Painel "Avançado" (background image/vídeo/overlay, animação de entrada, delay, anchor `id`, classes CSS, visibilidade por breakpoint)
+- **Largura de container** por preset (estreita / normal / ampla / full)
+- **Fundo** com cor, gradiente (presets visuais + CSS personalizado), imagem, vídeo, overlay e **parallax**
+- **Animação de entrada** (fade / slide / zoom / blur / flip) com atraso e **stagger** em cascata dos filhos
+- Painel "Avançado": vídeo de fundo, overlay, parallax, anchor `id`, classes CSS, visibilidade por breakpoint
 - Duplicação rápida e reordenação por drag-and-drop
 - On-demand revalidation — alterações no admin propagam imediatamente para o site público
 

@@ -41,6 +41,8 @@ import ReservationForm from "@/components/forms/ReservationForm";
 import AccordionSection from "@/components/sections/client/AccordionSection";
 import StatsSection from "@/components/sections/client/StatsSection";
 import TabsSection from "@/components/sections/client/TabsSection";
+import VideoSection from "@/components/sections/client/VideoSection";
+import MarqueeSection from "@/components/sections/client/MarqueeSection";
 
 type SpacingConfig = {
   marginTop?: number;
@@ -49,7 +51,10 @@ type SpacingConfig = {
   paddingRight?: number;
   paddingBottom?: number;
   paddingLeft?: number;
+  /** Legacy raw Tailwind max-width bucket (kept for backwards compat). */
   maxWidth?: string;
+  /** Preferred preset: narrow / normal / wide / full. Overrides `maxWidth`. */
+  containerWidth?: "narrow" | "normal" | "wide" | "full";
   bgColor?: string;
   bgGradient?: string;
   bgImage?: string;
@@ -60,10 +65,16 @@ type SpacingConfig = {
   bgOverlay?: string;
   /** Background video URL (mp4/webm). Plays muted & looped behind the content. */
   bgVideo?: string;
+  /** When true, applies a CSS-only parallax effect to bgImage (disabled on touch). */
+  bgParallax?: boolean;
   /** Entry animation when the section scrolls into view. */
   animation?: RevealAnimation | "none";
   /** Delay before the entry animation starts, in ms. */
   animationDelay?: number;
+  /** When true, direct children of the section cascade in (stagger). */
+  animationStagger?: boolean;
+  /** Step between staggered children, in ms. */
+  animationStaggerStep?: number;
   /** Hide the section on the listed breakpoints. */
   hideOn?: Array<"mobile" | "tablet" | "desktop">;
   /** HTML id on the `<section>` element for in-page anchor links. */
@@ -138,7 +149,17 @@ function getResponsiveHideClass(hideOn?: Array<"mobile" | "tablet" | "desktop">)
   return classes.join(" ");
 }
 
-function getMaxWidthClass(maxWidth?: string) {
+function getMaxWidthClass(
+  maxWidth?: string,
+  containerWidth?: "narrow" | "normal" | "wide" | "full",
+) {
+  // containerWidth preset wins over legacy maxWidth when both are set.
+  switch (containerWidth) {
+    case "narrow": return "max-w-3xl";
+    case "normal": return "max-w-5xl";
+    case "wide":   return "max-w-7xl";
+    case "full":   return "max-w-full";
+  }
   switch (maxWidth) {
     case "4xl": return "max-w-4xl";
     case "5xl": return "max-w-5xl";
@@ -1141,6 +1162,8 @@ const SECTION_COMPONENTS: Record<string, SectionRender> = {
   pricing: PricingSection,
   button_group: ButtonGroupSection,
   logos: LogosSection,
+  video: VideoSection,
+  marquee: MarqueeSection,
 };
 
 export const REGISTERED_SECTION_TYPES = Object.keys(SECTION_COMPONENTS);
@@ -1166,11 +1189,12 @@ export default async function SectionRenderer({
         const content = parseJSON(section.content) as Record<string, unknown>;
         const spacing = parseJSON(section.spacing) as SpacingConfig;
         const spacingStyle = getSpacingStyle(spacing);
-        const maxWidthClass = getMaxWidthClass(spacing.maxWidth);
+        const maxWidthClass = getMaxWidthClass(spacing.maxWidth, spacing.containerWidth);
         const fullBleed = spacing.fullBleed === true || section.type === "hero_home";
         const hideClass = getResponsiveHideClass(spacing.hideOn);
         const customClass = (spacing.customClass || "").trim();
         const sectionId = (spacing.anchorId || "").trim() || undefined;
+        const parallax = spacing.bgParallax === true && !!spacing.bgImage && !spacing.bgVideo;
 
         // Inner content (centred wrapper or full bleed)
         const inner = fullBleed ? (
@@ -1181,10 +1205,15 @@ export default async function SectionRenderer({
           </div>
         );
 
-        // Optional scroll-triggered animation
+        // Optional scroll-triggered animation (with optional child stagger)
         const wrapped =
           spacing.animation && spacing.animation !== "none" ? (
-            <Reveal animation={spacing.animation} delay={spacing.animationDelay ?? 0}>
+            <Reveal
+              animation={spacing.animation}
+              delay={spacing.animationDelay ?? 0}
+              stagger={spacing.animationStagger === true}
+              staggerStep={spacing.animationStaggerStep ?? 80}
+            >
               {inner}
             </Reveal>
           ) : (
@@ -1198,6 +1227,8 @@ export default async function SectionRenderer({
             key={section.id}
             id={sectionId}
             style={spacingStyle}
+            data-lit-section=""
+            data-parallax={parallax ? "true" : undefined}
             className={cn("relative overflow-hidden", hideClass, customClass)}
           >
             {/* Background layer (image / video) sits beneath everything */}
@@ -1216,6 +1247,7 @@ export default async function SectionRenderer({
                 )}
                 {!spacing.bgVideo && spacing.bgImage && (
                   <div
+                    data-lit-bg-image=""
                     className="absolute inset-0 bg-cover bg-center"
                     style={{ backgroundImage: `url(${spacing.bgImage})` }}
                   />

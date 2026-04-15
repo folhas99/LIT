@@ -9,7 +9,9 @@ export type RevealAnimation =
   | "slideDown"
   | "slideLeft"
   | "slideRight"
-  | "zoomIn";
+  | "zoomIn"
+  | "blurIn"
+  | "flipIn";
 
 type RevealProps = {
   children: React.ReactNode;
@@ -23,6 +25,10 @@ type RevealProps = {
   threshold?: number;
   /** Which entry animation to play. Defaults to `slideUp` (the legacy behaviour). */
   animation?: RevealAnimation;
+  /** When true, direct children cascade in progressively (handled in globals.css). */
+  stagger?: boolean;
+  /** Step between consecutive staggered children, in ms (default 80). */
+  staggerStep?: number;
 };
 
 /**
@@ -31,6 +37,10 @@ type RevealProps = {
  *
  * The default `slideUp` matches the original behaviour so existing callers
  * don't need to be migrated.
+ *
+ * When `stagger` is true, emits `data-lit-reveal` + `data-stagger` + the
+ * `data-visible` flag so the CSS in `globals.css` can cascade child reveals
+ * without spawning an IntersectionObserver per child.
  */
 export default function Reveal({
   children,
@@ -40,6 +50,8 @@ export default function Reveal({
   once = true,
   threshold = 0.15,
   animation = "slideUp",
+  stagger = false,
+  staggerStep = 80,
 }: RevealProps) {
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
@@ -83,20 +95,35 @@ export default function Reveal({
     slideLeft: "opacity-0 translate-x-6",
     slideRight: "opacity-0 -translate-x-6",
     zoomIn: "opacity-0 scale-95",
+    blurIn: "opacity-0 blur-md",
+    flipIn: "opacity-0 [transform:perspective(800px)_rotateX(12deg)]",
   };
 
-  const visibleClasses = "opacity-100 translate-x-0 translate-y-0 scale-100";
+  const visibleClasses =
+    "opacity-100 translate-x-0 translate-y-0 scale-100 blur-0 [transform:perspective(800px)_rotateX(0deg)]";
+
+  // When stagger is on, the wrapper itself shouldn't animate (otherwise children
+  // inherit both the wrapper fade and their own). CSS handles child cascade via
+  // the data attributes.
+  const wrapperHidden = stagger ? "" : hiddenClasses[animation];
+  const wrapperVisible = stagger ? "" : visibleClasses;
 
   const TagComponent = Tag as unknown as React.ElementType;
   return (
     <TagComponent
       ref={ref}
+      data-lit-reveal=""
+      data-stagger={stagger ? "" : undefined}
+      data-visible={visible ? "true" : "false"}
       className={cn(
         "transition-all duration-700 ease-out will-change-transform",
-        visible ? visibleClasses : hiddenClasses[animation],
+        visible ? wrapperVisible : wrapperHidden,
         className
       )}
-      style={{ transitionDelay: visible ? `${delay}ms` : "0ms" }}
+      style={{
+        transitionDelay: visible ? `${delay}ms` : "0ms",
+        ...(stagger ? ({ ["--stagger-step" as string]: `${staggerStep}ms` } as React.CSSProperties) : {}),
+      }}
     >
       {children}
     </TagComponent>

@@ -138,6 +138,103 @@ body {
 }
 
 /* ============================================
+   MARQUEE / TICKER
+   ============================================ */
+
+@keyframes marquee-left {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-right {
+  from { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+.lit-marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.lit-marquee__track {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--marquee-gap, 3rem);
+  white-space: nowrap;
+  will-change: transform;
+  animation: marquee-left var(--marquee-speed, 30s) linear infinite;
+}
+
+.lit-marquee[data-direction="right"] .lit-marquee__track {
+  animation-name: marquee-right;
+}
+
+.lit-marquee[data-pause-on-hover="true"]:hover .lit-marquee__track {
+  animation-play-state: paused;
+}
+
+/* ============================================
+   REVEAL-ON-SCROLL STAGGER
+   ============================================
+   When a Reveal wrapper has data-stagger, its direct children fade/translate
+   in on a cascading delay. Works in combination with the Reveal component,
+   which flips `data-visible` once the section enters the viewport. */
+
+[data-lit-reveal][data-stagger] > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-lit-reveal][data-stagger][data-visible="true"] > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(1)  { transition-delay: calc(var(--stagger-step, 80ms) * 0); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(2)  { transition-delay: calc(var(--stagger-step, 80ms) * 1); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(3)  { transition-delay: calc(var(--stagger-step, 80ms) * 2); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(4)  { transition-delay: calc(var(--stagger-step, 80ms) * 3); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(5)  { transition-delay: calc(var(--stagger-step, 80ms) * 4); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(6)  { transition-delay: calc(var(--stagger-step, 80ms) * 5); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(7)  { transition-delay: calc(var(--stagger-step, 80ms) * 6); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(8)  { transition-delay: calc(var(--stagger-step, 80ms) * 7); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(9)  { transition-delay: calc(var(--stagger-step, 80ms) * 8); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(10) { transition-delay: calc(var(--stagger-step, 80ms) * 9); }
+[data-lit-reveal][data-stagger][data-visible="true"] > *:nth-child(n+11) {
+  transition-delay: calc(var(--stagger-step, 80ms) * 10);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lit-reveal][data-stagger] > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================
+   PARALLAX BACKGROUND
+   ============================================
+   Simple, JS-free parallax via fixed background-attachment. Disabled on
+   touch devices where it breaks (Safari iOS etc.). Only applied when the
+   section opts in via `data-parallax`. */
+
+[data-lit-section][data-parallax="true"] [data-lit-bg-image] {
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+@media (hover: none), (max-width: 1024px) {
+  [data-lit-section][data-parallax="true"] [data-lit-bg-image] {
+    background-attachment: scroll;
+  }
+}
+
+/* ============================================
    GLOW / PULSE EFFECTS
    ============================================ */
 

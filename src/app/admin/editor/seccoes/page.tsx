@@ -54,6 +54,8 @@ import {
   Tag,
   Rows3,
   Building2,
+  Film,
+  Megaphone,
   Star,
   Heart,
   Award,
@@ -122,7 +124,9 @@ type SectionType =
   | "tabs"
   | "pricing"
   | "button_group"
-  | "logos";
+  | "logos"
+  | "video"
+  | "marquee";
 
 type RevealAnim =
   | "none"
@@ -131,7 +135,9 @@ type RevealAnim =
   | "slideDown"
   | "slideLeft"
   | "slideRight"
-  | "zoomIn";
+  | "zoomIn"
+  | "blurIn"
+  | "flipIn";
 
 interface SpacingData {
   marginTop: number;
@@ -140,7 +146,10 @@ interface SpacingData {
   paddingRight: number;
   paddingBottom: number;
   paddingLeft: number;
+  /** Legacy Tailwind bucket (kept so existing records still work). */
   maxWidth: "full" | "7xl" | "6xl" | "5xl" | "4xl";
+  /** Preferred preset: narrow/normal/wide/full (overrides `maxWidth` when set). */
+  containerWidth?: "narrow" | "normal" | "wide" | "full";
   bgColor: string;
   bgGradient: string;
   bgImage: string;
@@ -149,9 +158,15 @@ interface SpacingData {
   bgOverlay?: string;
   /** Background video URL that loops behind the section content. */
   bgVideo?: string;
+  /** CSS-only parallax effect on bgImage (disabled on touch devices). */
+  bgParallax?: boolean;
   /** Entry animation when scrolling into view. */
   animation?: RevealAnim;
   animationDelay?: number;
+  /** When true, direct children cascade-reveal in sequence. */
+  animationStagger?: boolean;
+  /** Step between staggered children, in ms. */
+  animationStaggerStep?: number;
   /** Hide on selected breakpoints. */
   hideOn?: Array<"mobile" | "tablet" | "desktop">;
   /** HTML id for in-page anchor links (no `#`). */
@@ -183,14 +198,18 @@ const defaultSpacing: SpacingData = {
   paddingBottom: 0,
   paddingLeft: 0,
   maxWidth: "full",
+  containerWidth: undefined,
   bgColor: "",
   bgGradient: "",
   bgImage: "",
   borderRadius: 0,
   bgOverlay: "",
   bgVideo: "",
+  bgParallax: false,
   animation: "none",
   animationDelay: 0,
+  animationStagger: false,
+  animationStaggerStep: 80,
   hideOn: [],
   anchorId: "",
   customClass: "",
@@ -379,6 +398,16 @@ const sectionTypeMeta: Record<
     label: "Logos / Parceiros",
     icon: Building2,
     description: "Faixa de logos de parceiros ou patrocinadores",
+  },
+  video: {
+    label: "Vídeo",
+    icon: Film,
+    description: "Player com YouTube, Vimeo ou MP4 self-hosted (+ aspect ratio)",
+  },
+  marquee: {
+    label: "Marquee / Ticker",
+    icon: Megaphone,
+    description: "Faixa com texto ou logos em movimento horizontal contínuo",
   },
 };
 
@@ -595,6 +624,37 @@ function getDefaultContent(type: SectionType): Record<string, unknown> {
         grayscale: true,
         items: [
           { src: "", alt: "", href: "" },
+        ],
+      };
+    case "video":
+      return {
+        title: "",
+        titleEn: "",
+        caption: "",
+        captionEn: "",
+        url: "",
+        poster: "",
+        aspectRatio: "16:9",
+        maxWidth: "5xl",
+        autoplay: false,
+        loop: false,
+        muted: true,
+        controls: true,
+      };
+    case "marquee":
+      return {
+        direction: "left",
+        speed: 30,
+        pauseOnHover: true,
+        separator: "•",
+        itemHeight: 32,
+        textSize: "xl",
+        grayscale: false,
+        gap: 48,
+        items: [
+          { text: "LIT Coimbra", textEn: "LIT Coimbra" },
+          { text: "Noites Épicas", textEn: "Epic Nights" },
+          { text: "Reservas VIP", textEn: "VIP Bookings" },
         ],
       };
     default:
@@ -1320,6 +1380,10 @@ function SectionEditor({
       return <ButtonGroupEditor content={content} onUpdate={onUpdate} />;
     case "logos":
       return <LogosEditor content={content} onUpdate={onUpdate} />;
+    case "video":
+      return <VideoEditor content={content} onUpdate={onUpdate} />;
+    case "marquee":
+      return <MarqueeEditor content={content} onUpdate={onUpdate} />;
     default:
       return <p className="text-gray-500 text-sm">Editor não disponível para este tipo.</p>;
   }
@@ -2709,9 +2773,50 @@ function SpacingEditor({
         <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">
           Layout
         </p>
+
+        {/* Container width preset — the modern picker. */}
+        <div className="mb-4">
+          <label className="block text-xs text-gray-400 mb-2">Largura do container</label>
+          <div className="grid grid-cols-4 gap-2">
+            {([
+              { value: "narrow", label: "Estreita", hint: "48rem" },
+              { value: "normal", label: "Normal", hint: "64rem" },
+              { value: "wide", label: "Ampla", hint: "80rem" },
+              { value: "full", label: "Full", hint: "100%" },
+            ] as const).map((opt) => {
+              const active = spacing.containerWidth === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onUpdate("containerWidth", active ? undefined : opt.value)}
+                  className={cn(
+                    "px-2 py-2 rounded-sm border text-xs transition-colors",
+                    active
+                      ? "bg-jungle-700/60 border-jungle-500 text-white"
+                      : "bg-jungle-900 border-jungle-700/40 text-gray-400 hover:text-white hover:border-jungle-600",
+                  )}
+                >
+                  <div className="font-semibold">{opt.label}</div>
+                  <div className="text-[10px] text-gray-500">{opt.hint}</div>
+                </button>
+              );
+            })}
+          </div>
+          {spacing.containerWidth && (
+            <button
+              type="button"
+              onClick={() => onUpdate("containerWidth", undefined)}
+              className="mt-2 text-xs text-gray-500 hover:text-white"
+            >
+              Usar legacy (Tailwind bucket)
+            </button>
+          )}
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <FieldSelect
-            label="Largura Máxima"
+            label="Largura (legacy)"
             value={spacing.maxWidth}
             onChange={(v) => onUpdate("maxWidth", v)}
             options={[
@@ -2729,6 +2834,11 @@ function SpacingEditor({
             max={32}
           />
         </div>
+        {spacing.containerWidth && (
+          <p className="text-[11px] text-gray-500 mt-1">
+            O preset acima está activo e sobrepõe a largura legacy.
+          </p>
+        )}
       </div>
 
       {/* Background */}
@@ -2765,11 +2875,9 @@ function SpacingEditor({
               )}
             </div>
           </div>
-          <FieldInput
-            label="Gradiente CSS"
+          <GradientField
             value={spacing.bgGradient || ""}
             onChange={(v) => onUpdate("bgGradient", v)}
-            placeholder="linear-gradient(135deg, #000, #111)"
           />
           <FieldInput
             label="Imagem de Fundo (URL)"
@@ -2779,6 +2887,126 @@ function SpacingEditor({
           />
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------- Gradient preset picker ---------- */
+
+const GRADIENT_PRESETS: Array<{ key: string; label: string; value: string }> = [
+  {
+    key: "jungle-night",
+    label: "Jungle Night",
+    value: "linear-gradient(135deg, #050a05 0%, #0d1f0d 50%, #061206 100%)",
+  },
+  {
+    key: "jungle-neon",
+    label: "Jungle Neon",
+    value: "linear-gradient(135deg, #071508 0%, #1a4a2a 60%, #4a8c3f 100%)",
+  },
+  {
+    key: "gold-dusk",
+    label: "Gold Dusk",
+    value: "linear-gradient(135deg, #0a0a0a 0%, #2a1f0a 60%, #8a6a1f 100%)",
+  },
+  {
+    key: "purple-haze",
+    label: "Purple Haze",
+    value: "linear-gradient(135deg, #0a0514 0%, #2a1044 60%, #6a1a8a 100%)",
+  },
+  {
+    key: "ember",
+    label: "Ember",
+    value: "linear-gradient(135deg, #0a0505 0%, #3a0f0f 60%, #8a2d2d 100%)",
+  },
+  {
+    key: "radial-spot",
+    label: "Radial Spot",
+    value: "radial-gradient(circle at 30% 30%, rgba(74,140,63,0.4) 0%, rgba(5,10,5,0.95) 70%)",
+  },
+  {
+    key: "soft-fade",
+    label: "Soft Fade",
+    value: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0) 100%)",
+  },
+  {
+    key: "vignette",
+    label: "Vignette",
+    value: "radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%)",
+  },
+];
+
+function GradientField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [customOpen, setCustomOpen] = useState(false);
+  const active = GRADIENT_PRESETS.find((p) => p.value === value);
+
+  return (
+    <div>
+      <label className="block text-sm text-gray-300 mb-1.5">Gradiente</label>
+      <div className="grid grid-cols-4 gap-2">
+        {GRADIENT_PRESETS.map((p) => {
+          const isActive = active?.key === p.key;
+          return (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => onChange(isActive ? "" : p.value)}
+              title={p.label}
+              className={cn(
+                "aspect-square rounded-sm border-2 transition-all",
+                isActive
+                  ? "border-jungle-400 ring-2 ring-jungle-500/40"
+                  : "border-jungle-700/40 hover:border-jungle-500",
+              )}
+              style={{ background: p.value }}
+            >
+              <span className="sr-only">{p.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      {active && (
+        <p className="mt-1.5 text-xs text-gray-400">Preset activo: <span className="text-white">{active.label}</span></p>
+      )}
+      <button
+        type="button"
+        onClick={() => setCustomOpen((v) => !v)}
+        className="mt-2 text-xs text-jungle-400 hover:text-jungle-300"
+      >
+        {customOpen ? "Esconder CSS personalizado" : "CSS personalizado"}
+      </button>
+      {customOpen && (
+        <div className="mt-2 space-y-2">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="linear-gradient(135deg, #000, #111)"
+            className="w-full px-3 py-2 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white text-sm font-mono focus:outline-none focus:border-jungle-500 transition-colors"
+          />
+          {value && (
+            <div
+              className="w-full h-12 rounded-sm border border-jungle-700/50"
+              style={{ background: value }}
+            />
+          )}
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="text-xs text-gray-500 hover:text-white"
+            >
+              Limpar gradiente
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -2848,6 +3076,8 @@ const ANIMATION_OPTIONS = [
   { value: "slideLeft", label: "Slide Left" },
   { value: "slideRight", label: "Slide Right" },
   { value: "zoomIn", label: "Zoom In" },
+  { value: "blurIn", label: "Blur In" },
+  { value: "flipIn", label: "Flip In" },
 ];
 
 const BREAKPOINTS: Array<{ key: "mobile" | "tablet" | "desktop"; label: string }> = [
@@ -2871,6 +3101,8 @@ function AdvancedEditor({
     onUpdate("hideOn", Array.from(set));
   };
 
+  const animationOn = (spacing.animation || "none") !== "none";
+
   return (
     <div className="bg-jungle-900/40 border border-jungle-700/30 rounded-sm p-4 space-y-5">
       {/* Animation */}
@@ -2890,6 +3122,24 @@ function AdvancedEditor({
           unit="ms"
         />
       </div>
+
+      {animationOn && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <FieldCheckbox
+            label="Stagger (filhos em cascata)"
+            value={spacing.animationStagger === true}
+            onChange={(v) => onUpdate("animationStagger", v)}
+          />
+          <FieldSlider
+            label="Intervalo entre filhos"
+            value={spacing.animationStaggerStep ?? 80}
+            onChange={(v) => onUpdate("animationStaggerStep", v)}
+            min={20}
+            max={400}
+            unit="ms"
+          />
+        </div>
+      )}
 
       {/* Responsive visibility */}
       <div>
@@ -2948,6 +3198,18 @@ function AdvancedEditor({
           onChange={(v) => onUpdate("bgVideo", v)}
           placeholder="https://..."
         />
+      </div>
+
+      {/* Parallax — only meaningful for bgImage */}
+      <div>
+        <FieldCheckbox
+          label="Parallax (imagem de fundo fixa durante o scroll)"
+          value={spacing.bgParallax === true}
+          onChange={(v) => onUpdate("bgParallax", v)}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Só se aplica quando há <code>Imagem de Fundo</code> definida. Desactivado em mobile / touch.
+        </p>
       </div>
 
       {/* Anchor + custom class */}
@@ -3988,6 +4250,238 @@ function LogosEditor({ content, onUpdate }: EditorProps) {
           className="w-full py-2 border border-dashed border-jungle-700/50 rounded-sm text-sm text-gray-400 hover:text-white hover:border-jungle-500/50 transition-colors flex items-center justify-center gap-2"
         >
           <Plus size={14} /> Adicionar logo
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* Video Editor                                                        */
+/* ================================================================== */
+
+function VideoEditor({ content, onUpdate }: EditorProps) {
+  return (
+    <div className="space-y-3">
+      <FieldBilingual
+        label="Título (opcional)"
+        valuePt={String(content.title || "")}
+        valueEn={String(content.titleEn || "")}
+        onChangePt={(v) => onUpdate("title", v)}
+        onChangeEn={(v) => onUpdate("titleEn", v)}
+      />
+      <FieldInput
+        label="URL do vídeo"
+        value={String(content.url || "")}
+        onChange={(v) => onUpdate("url", v)}
+        placeholder="YouTube, Vimeo ou URL .mp4 / .webm"
+      />
+      <p className="text-[11px] text-gray-500 -mt-2">
+        Aceita youtube.com/watch?v=…, youtu.be/…, vimeo.com/… ou ficheiros self-hosted.
+      </p>
+      <MediaField
+        label="Poster (thumbnail para self-hosted)"
+        value={String(content.poster || "")}
+        onChange={(v) => onUpdate("poster", v)}
+        placeholder="URL ou escolher da biblioteca..."
+      />
+      <div className="grid grid-cols-2 gap-3">
+        <FieldSelect
+          label="Aspect ratio"
+          value={String(content.aspectRatio || "16:9")}
+          onChange={(v) => onUpdate("aspectRatio", v)}
+          options={[
+            { value: "16:9", label: "16:9 (widescreen)" },
+            { value: "4:3", label: "4:3 (clássico)" },
+            { value: "1:1", label: "1:1 (quadrado)" },
+            { value: "21:9", label: "21:9 (cinema)" },
+            { value: "9:16", label: "9:16 (vertical)" },
+          ]}
+        />
+        <FieldSelect
+          label="Largura máxima"
+          value={String(content.maxWidth || "5xl")}
+          onChange={(v) => onUpdate("maxWidth", v)}
+          options={[
+            { value: "4xl", label: "Estreita (4xl)" },
+            { value: "5xl", label: "Normal (5xl)" },
+            { value: "6xl", label: "Ampla (6xl)" },
+            { value: "full", label: "Full width" },
+          ]}
+        />
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <FieldCheckbox
+          label="Autoplay"
+          value={content.autoplay === true}
+          onChange={(v) => onUpdate("autoplay", v)}
+        />
+        <FieldCheckbox
+          label="Loop"
+          value={content.loop === true}
+          onChange={(v) => onUpdate("loop", v)}
+        />
+        <FieldCheckbox
+          label="Muted"
+          value={content.muted !== false}
+          onChange={(v) => onUpdate("muted", v)}
+        />
+        <FieldCheckbox
+          label="Controlos"
+          value={content.controls !== false}
+          onChange={(v) => onUpdate("controls", v)}
+        />
+      </div>
+      <p className="text-[11px] text-gray-500">
+        Os browsers exigem <code>muted</code> para autoplay funcionar sem interacção.
+      </p>
+      <FieldBilingual
+        label="Legenda (opcional)"
+        valuePt={String(content.caption || "")}
+        valueEn={String(content.captionEn || "")}
+        onChangePt={(v) => onUpdate("caption", v)}
+        onChangeEn={(v) => onUpdate("captionEn", v)}
+      />
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* Marquee Editor                                                      */
+/* ================================================================== */
+
+type MarqueeItem = {
+  text?: string;
+  textEn?: string;
+  image?: string;
+  imageAlt?: string;
+  href?: string;
+};
+
+function MarqueeEditor({ content, onUpdate }: EditorProps) {
+  const items: MarqueeItem[] = Array.isArray(content.items)
+    ? (content.items as MarqueeItem[])
+    : [];
+  const setItems = (next: MarqueeItem[]) => onUpdate("items", next);
+  const update = (i: number, patch: Partial<MarqueeItem>) =>
+    setItems(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <FieldSelect
+          label="Direcção"
+          value={String(content.direction || "left")}
+          onChange={(v) => onUpdate("direction", v)}
+          options={[
+            { value: "left", label: "← Esquerda" },
+            { value: "right", label: "→ Direita" },
+          ]}
+        />
+        <FieldSlider
+          label="Velocidade (s/loop)"
+          value={typeof content.speed === "number" ? (content.speed as number) : 30}
+          onChange={(v) => onUpdate("speed", v)}
+          min={10}
+          max={90}
+          unit="s"
+        />
+        <FieldSelect
+          label="Tamanho do texto"
+          value={String(content.textSize || "xl")}
+          onChange={(v) => onUpdate("textSize", v)}
+          options={[
+            { value: "md", label: "Médio" },
+            { value: "lg", label: "Grande" },
+            { value: "xl", label: "Extra" },
+            { value: "2xl", label: "2XL" },
+            { value: "3xl", label: "3XL" },
+          ]}
+        />
+        <FieldInput
+          label="Separador"
+          value={String(content.separator ?? "•")}
+          onChange={(v) => onUpdate("separator", v)}
+          placeholder="•"
+        />
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <FieldSlider
+          label="Espaçamento"
+          value={typeof content.gap === "number" ? (content.gap as number) : 48}
+          onChange={(v) => onUpdate("gap", v)}
+          min={16}
+          max={128}
+          unit="px"
+        />
+        <FieldSlider
+          label="Altura dos logos"
+          value={typeof content.itemHeight === "number" ? (content.itemHeight as number) : 32}
+          onChange={(v) => onUpdate("itemHeight", v)}
+          min={16}
+          max={80}
+          unit="px"
+        />
+        <FieldCheckbox
+          label="Pausar em hover"
+          value={content.pauseOnHover !== false}
+          onChange={(v) => onUpdate("pauseOnHover", v)}
+        />
+        <FieldCheckbox
+          label="Logos a cinzento"
+          value={content.grayscale === true}
+          onChange={(v) => onUpdate("grayscale", v)}
+        />
+      </div>
+
+      <div className="space-y-3">
+        {items.map((item, i) => (
+          <div key={i} className="p-3 bg-jungle-900/40 border border-jungle-700/30 rounded-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase tracking-widest text-jungle-400">Item #{i + 1}</span>
+              <button
+                onClick={() => setItems(items.filter((_, idx) => idx !== i))}
+                className="text-gray-500 hover:text-red-400 transition-colors"
+                title="Remover"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+            <FieldBilingual
+              label="Texto (use apenas se não houver imagem)"
+              valuePt={item.text || ""}
+              valueEn={item.textEn || ""}
+              onChangePt={(v) => update(i, { text: v })}
+              onChangeEn={(v) => update(i, { textEn: v })}
+            />
+            <MediaField
+              label="Imagem / Logo (opcional)"
+              value={item.image || ""}
+              onChange={(v) => update(i, { image: v })}
+              placeholder="URL ou escolher da biblioteca..."
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <FieldInput
+                label="Texto alternativo"
+                value={item.imageAlt || ""}
+                onChange={(v) => update(i, { imageAlt: v })}
+                placeholder="Descrição da imagem"
+              />
+              <FieldInput
+                label="Link (opcional)"
+                value={item.href || ""}
+                onChange={(v) => update(i, { href: v })}
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setItems([...items, { text: "" }])}
+          className="w-full py-2 border border-dashed border-jungle-700/50 rounded-sm text-sm text-gray-400 hover:text-white hover:border-jungle-500/50 transition-colors flex items-center justify-center gap-2"
+        >
+          <Plus size={14} /> Adicionar item
         </button>
       </div>
     </div>
