@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Palette, FileText, Image, ArrowRight, LayoutList, Globe } from "lucide-react";
+import { Palette, FileText, Image, ArrowRight, LayoutList, Globe, Wand2 } from "lucide-react";
 
 const editorCards = [
   {
@@ -12,18 +12,25 @@ const editorCards = [
       "Personaliza as cores, tipografia e efeitos visuais do site.",
   },
   {
+    href: "/admin/editor/elementos",
+    icon: Wand2,
+    title: "Elementos Visuais",
+    description:
+      "Edita botões, cartões e formulários como tokens globais — estilo Elementor.",
+  },
+  {
+    href: "/admin/paginas",
+    icon: FileText,
+    title: "Páginas",
+    description:
+      "Cria e gere páginas do site, como no WordPress. Define metadata, navegação e estado de publicação.",
+  },
+  {
     href: "/admin/editor/seccoes",
     icon: LayoutList,
     title: "Secções das Páginas",
     description:
-      "Adiciona, reordena e personaliza secções como no Elementor. Texto, galerias, CTAs e mais.",
-  },
-  {
-    href: "/admin/editor/paginas",
-    icon: FileText,
-    title: "Conteúdo das Páginas",
-    description:
-      "Edita o conteúdo de texto e imagens de cada página do site.",
+      "Compõe cada página com blocos editáveis: texto, galerias, CTAs, eventos, contactos e mais.",
   },
   {
     href: "/admin/editor/media",

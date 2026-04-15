@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSettings, setSetting } from "@/lib/settings";
+import { revalidateAllPublicPaths } from "@/lib/revalidate";
 
 export async function GET() {
   try {
@@ -35,6 +36,8 @@ export async function PUT(request: Request) {
     for (const [key, value] of Object.entries(body)) {
       await setSetting(key, String(value));
     }
+
+    revalidateAllPublicPaths();
 
     const settings = await getSettings();
     return NextResponse.json(settings);

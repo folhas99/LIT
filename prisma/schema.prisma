@@ -101,9 +101,31 @@ model SiteSetting {
   value String @db.Text
 }
 
+model Page {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  titleEn     String?
+  description String?       @db.Text
+  /// Internal, non-URL system pages cannot be deleted from admin.
+  system      Boolean       @default(false)
+  published   Boolean       @default(true)
+  showInNav   Boolean       @default(false)
+  navLabel    String?
+  navLabelEn  String?
+  navOrder    Int           @default(0)
+  sections    PageSection[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([published, navOrder])
+}
+
 model PageSection {
   id         String    @id @default(cuid())
+  /// Slug of the owning Page (FK). Kept as column name `page` for backward compat.
   page       String
+  pageRef    Page      @relation(fields: [page], references: [slug], onDelete: Cascade)
   type       String
   content    String    @db.Text
   order      Int       @default(0)

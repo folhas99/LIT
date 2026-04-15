@@ -33,6 +33,34 @@ export type SiteSettings = {
   themeFontBody: string;
   themeAnimations: string;
   themeParticles: string;
+  // Visual element tokens — buttons
+  themeButtonRadius: string; // px
+  themeButtonPaddingX: string; // px
+  themeButtonPaddingY: string; // px
+  themeButtonFontWeight: string; // 400-700
+  themeButtonTextTransform: string; // "uppercase" | "none"
+  themeButtonLetterSpacing: string; // em e.g. "0.05"
+  themeButtonPrimaryBg: string;
+  themeButtonPrimaryText: string;
+  themeButtonPrimaryHoverBg: string;
+  themeButtonSecondaryBg: string;
+  themeButtonSecondaryText: string;
+  themeButtonSecondaryBorder: string;
+  themeButtonSecondaryHoverBg: string;
+  themeButtonGhostText: string;
+  themeButtonGhostHoverBg: string;
+  // Visual element tokens — cards
+  themeCardRadius: string; // px
+  themeCardBg: string;
+  themeCardBorderColor: string;
+  themeCardBorderWidth: string; // px
+  themeCardShadow: string; // "none" | "soft" | "medium" | "glow"
+  // Visual element tokens — inputs
+  themeInputRadius: string; // px
+  themeInputBg: string;
+  themeInputBorderColor: string;
+  themeInputText: string;
+  themeInputFocusColor: string;
   contentHeroTitle: string;
   contentHeroSubtitle: string;
   contentHeroCTA1Text: string;
@@ -90,6 +118,31 @@ export const defaults: SiteSettings = {
   themeFontBody: "Inter",
   themeAnimations: "true",
   themeParticles: "true",
+  themeButtonRadius: "2",
+  themeButtonPaddingX: "32",
+  themeButtonPaddingY: "12",
+  themeButtonFontWeight: "600",
+  themeButtonTextTransform: "uppercase",
+  themeButtonLetterSpacing: "0.1",
+  themeButtonPrimaryBg: "#2d5a27",
+  themeButtonPrimaryText: "#ffffff",
+  themeButtonPrimaryHoverBg: "#4a8c3f",
+  themeButtonSecondaryBg: "transparent",
+  themeButtonSecondaryText: "#ffffff",
+  themeButtonSecondaryBorder: "#ffffff33",
+  themeButtonSecondaryHoverBg: "#ffffff10",
+  themeButtonGhostText: "#39FF14",
+  themeButtonGhostHoverBg: "#39FF1420",
+  themeCardRadius: "2",
+  themeCardBg: "#0f2d16",
+  themeCardBorderColor: "#1a2a1a",
+  themeCardBorderWidth: "1",
+  themeCardShadow: "soft",
+  themeInputRadius: "2",
+  themeInputBg: "#0a1f0f",
+  themeInputBorderColor: "#1a2a1a",
+  themeInputText: "#ffffff",
+  themeInputFocusColor: "#4a8c3f",
   contentHeroTitle: "LIT Coimbra",
   contentHeroSubtitle: "A tua nova casa",
   contentHeroCTA1Text: "Reservar Mesa",

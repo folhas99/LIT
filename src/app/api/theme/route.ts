@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSettings, setSetting } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
+import { revalidateAllPublicPaths } from "@/lib/revalidate";
 
 export async function GET() {
   try {
@@ -57,6 +58,9 @@ export async function PUT(request: Request) {
       }
       await setSetting(key, String(value));
     }
+
+    // Theme variables flow into the root layout — bust every cached page.
+    revalidateAllPublicPaths();
 
     // Return updated theme settings
     const settings = await getSettings();

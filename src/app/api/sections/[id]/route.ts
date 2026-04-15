@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePageBySlug } from "@/lib/revalidate";
 
 // PUT: Update a single section
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -22,6 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         spacing: body.spacing !== undefined ? (body.spacing ? (typeof body.spacing === "string" ? body.spacing : JSON.stringify(body.spacing)) : null) : undefined,
       },
     });
+    revalidatePageBySlug(section.page);
     return NextResponse.json(section);
   } catch (error) {
     console.error("Failed to update section:", error);
@@ -37,7 +39,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const { id } = await params;
 
   try {
+    const existing = await prisma.pageSection.findUnique({ where: { id } });
     await prisma.pageSection.delete({ where: { id } });
+    if (existing) revalidatePageBySlug(existing.page);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete section:", error);

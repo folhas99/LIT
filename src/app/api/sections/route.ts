@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePageBySlug } from "@/lib/revalidate";
 
 // GET: Get all sections for a page (public)
 export async function GET(request: NextRequest) {
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    revalidatePageBySlug(page);
     return NextResponse.json(section, { status: 201 });
   } catch (error) {
     console.error("Failed to create section:", error);
@@ -65,6 +67,7 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
 
+    const touchedPages = new Set<string>();
     if (Array.isArray(body)) {
       // Bulk update (reorder)
       for (const item of body) {
@@ -77,8 +80,11 @@ export async function PUT(request: NextRequest) {
             spacing: item.spacing ? (typeof item.spacing === "string" ? item.spacing : JSON.stringify(item.spacing)) : undefined,
           },
         });
+        if (item.page) touchedPages.add(item.page);
       }
     }
+
+    for (const slug of touchedPages) revalidatePageBySlug(slug);
 
     const page = body[0]?.page;
     const sections = page

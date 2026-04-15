@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LIT Coimbra
 
-## Getting Started
+CMS e site público da discoteca LIT Coimbra, construído em Next.js 16 (App Router) + React 19 + Prisma 7 + PostgreSQL. Inclui um construtor visual de páginas inspirado no WordPress / Elementor, gestão de eventos, galerias, reservas VIP e formulário de contacto.
 
-First, run the development server:
+## Stack
+
+- **Frontend / SSR**: Next.js 16, React 19, TypeScript, Tailwind CSS 4
+- **Base de dados**: PostgreSQL via Prisma 7
+- **Auth**: NextAuth (Credentials)
+- **Editor rich-text**: TipTap
+- **Drag-and-drop**: @dnd-kit
+- **Email**: Resend
+- **Deploy**: Docker (multi-stage) + Portainer
+
+## Funcionalidades
+
+### Site público (PT/EN)
+- Homepage composta a partir de secções editáveis (hero, eventos, galeria, contacto, etc.)
+- Páginas dinâmicas em `/p/[slug]` para conteúdos criados no admin
+- Eventos com filtros por tipo/data, lineup, imagem destacada
+- Galerias por evento ou data, lightbox de fotos
+- Reservas VIP com formulário e gestão de estado
+- Mapa, contactos, redes sociais e horários configuráveis
+- Bilingue (PT/EN) com kill-switch global e cookie de locale
+- SEO: metadata dinâmica, Open Graph, sitemap, schema.org `NightClub`
+- PWA + service worker
+
+### Painel de administração (`/admin`)
+- **Editor Visual** (`/admin/editor`)
+  - **Tema & Cores** (`/tema`) — cores, tipografia, efeitos
+  - **Elementos Visuais** (`/elementos`) — tokens globais para botões (3 variantes), cartões e formulários, com pré-visualização ao vivo
+  - **Páginas** (`/admin/paginas`) — CRUD de páginas com slug, navegação, publicação
+  - **Secções** (`/seccoes`) — construtor drag-and-drop por página, com 30+ tipos de secção
+  - **Branding** — favicon e logo
+  - **Biblioteca de Media** — uploads centralizados
+- **Gestão**: Eventos · Galerias · Reservas · Mensagens · Utilizadores · Logs · Definições
+
+### Tipos de secção disponíveis
+Hero, Page Header, Texto, Imagem (galeria), CTA, Divisor, Espaçador, Embed, Colunas, Testemunhos, Countdown, Hero Homepage, Próximo Evento, Pré-visualização/Grelha de Eventos, Pré-visualização/Grelha de Galerias, CTA/Info/Form/Mapa de Contacto, Formulário de Reservas, Cartões Informativos, Cabeçalho, Caixa de Ícones, Acordeão/FAQ, Estatísticas (contadores animados), **Separadores (tabs), Tabela de Preços, Grupo de Botões, Logos / Parceiros**.
+
+Cada secção suporta:
+- Bilingue (PT/EN)
+- Painel "Avançado" (background image/vídeo/overlay, animação de entrada, delay, anchor `id`, classes CSS, visibilidade por breakpoint)
+- Duplicação rápida e reordenação por drag-and-drop
+- On-demand revalidation — alterações no admin propagam imediatamente para o site público
+
+## Setup local
+
+### Requisitos
+- Node 20+
+- PostgreSQL 16 (ou via `docker compose`)
+
+### Instalação
 
 ```bash
+npm install
+cp .env.example .env   # configurar DATABASE_URL, NEXTAUTH_SECRET, RESEND_API_KEY...
+npx prisma migrate deploy
+npx prisma db seed     # cria utilizador admin e definições iniciais
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Site em [http://localhost:3000](http://localhost:3000), painel em [/admin](http://localhost:3000/admin).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker compose up -d
+```
 
-## Learn More
+Inclui PostgreSQL com volume persistente e volume `uploads` para imagens carregadas.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev          # dev server (Turbopack)
+npm run build        # build de produção
+npm run start        # serve build
+npx tsc --noEmit     # typecheck
+npx prisma studio    # GUI da DB
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Estrutura
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── (rotas públicas)         # /, /eventos, /galeria, /reservas, /sobre, /contacto, /p/[slug]
+│   ├── admin/                   # painel completo
+│   │   ├── editor/              # tema, elementos, secções, branding, media
+│   │   ├── paginas/             # CRUD páginas
+│   │   ├── eventos/, galeria/, reservas/, mensagens/, utilizadores/, logs/, definicoes/
+│   └── api/                     # routes para sections, pages, theme, settings, events, ...
+├── components/
+│   ├── sections/                # SectionRenderer + 30+ secções (server + client)
+│   ├── admin/                   # Sidebar, RichTextEditor, MediaPicker, ...
+│   ├── home/, layout/, ui/, forms/
+└── lib/                         # prisma, auth, settings, revalidate, i18n, ...
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Construído para correr atrás de Portainer no servidor da LIT. Ver `Dockerfile` e `docker-compose.yml`. As variáveis `DATABASE_URL`, `NEXTAUTH_SECRET` e `NEXTAUTH_URL` têm de ser definidas no ambiente.

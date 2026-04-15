@@ -10,17 +10,20 @@ import { useI18n } from "@/components/I18nProvider";
 
 type NavItem = {
   label: string;
+  labelEn?: string | null;
   href: string;
   enabled: boolean;
 };
 
 export default function Header({
   sections,
+  navItems: navItemsFromDb,
   scheduleJson,
   logoUrl,
   siteName,
   englishEnabled = true,
 }: {
+  /** Legacy section toggles — kept for backward compat when no DB nav is provided. */
   sections: {
     events: boolean;
     gallery: boolean;
@@ -28,6 +31,9 @@ export default function Header({
     about: boolean;
     contact: boolean;
   };
+  /** Optional dynamic nav items resolved from the Page model. When provided,
+   *  takes precedence over the hardcoded section-based list. */
+  navItems?: Array<{ label: string; labelEn?: string | null; href: string }>;
   scheduleJson?: string;
   logoUrl?: string;
   siteName?: string;
@@ -35,7 +41,7 @@ export default function Header({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,13 +51,22 @@ export default function Header({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems: NavItem[] = [
+  const fallbackNav: NavItem[] = [
     { label: t("nav.events"), href: "/eventos", enabled: sections.events },
     { label: t("nav.gallery"), href: "/galeria", enabled: sections.gallery },
     { label: t("nav.reservations"), href: "/reservas", enabled: sections.reservations },
     { label: t("nav.about"), href: "/sobre", enabled: sections.about },
     { label: t("nav.contact"), href: "/contacto", enabled: sections.contact },
-  ].filter((item) => item.enabled);
+  ];
+
+  const navItems: NavItem[] = navItemsFromDb && navItemsFromDb.length > 0
+    ? navItemsFromDb.map((n) => ({
+        label: locale === "en" && n.labelEn ? n.labelEn : n.label,
+        labelEn: n.labelEn,
+        href: n.href,
+        enabled: true,
+      }))
+    : fallbackNav.filter((item) => item.enabled);
 
   return (
     <header

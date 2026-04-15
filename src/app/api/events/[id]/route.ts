@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { revalidateAllPublicPaths } from "@/lib/revalidate";
 
 export async function GET(
   request: Request,
@@ -79,6 +80,7 @@ export async function PUT(
       data,
     });
 
+    revalidateAllPublicPaths();
     return NextResponse.json(event);
   } catch (error) {
     console.error("Failed to update event:", error);
@@ -103,6 +105,7 @@ export async function DELETE(
 
     await prisma.event.delete({ where: { id } });
 
+    revalidateAllPublicPaths();
     return NextResponse.json({ message: "Event deleted" });
   } catch (error) {
     console.error("Failed to delete event:", error);

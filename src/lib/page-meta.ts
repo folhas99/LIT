@@ -19,7 +19,7 @@ export const PAGES = [
 
 export type PageKey = (typeof PAGES)[number];
 
-export async function getPageMeta(page: PageKey): Promise<PageMetaData | null> {
+export async function getPageMeta(page: string): Promise<PageMetaData | null> {
   try {
     const row = await prisma.pageMeta.findUnique({ where: { page } });
     if (!row) return null;
@@ -57,12 +57,12 @@ export async function getAllPageMeta(): Promise<Record<string, PageMetaData>> {
  * Applies admin-configured overrides on top of defaults.
  */
 export async function buildPageMetadata(
-  page: PageKey,
-  defaults: { title: string; description: string; absoluteTitle?: boolean }
+  page: string,
+  defaults: { title: string; description?: string; absoluteTitle?: boolean }
 ): Promise<Metadata> {
   const meta = await getPageMeta(page);
   const title = meta?.title || defaults.title;
-  const description = meta?.description || defaults.description;
+  const description = meta?.description || defaults.description || "";
   // Fallback to dynamic OG image generator if no admin override set
   const ogImage = meta?.ogImage || `/api/og?page=${page}`;
   const noIndex = meta?.noIndex || false;
@@ -87,7 +87,7 @@ export async function buildPageMetadata(
   };
 }
 
-export async function setPageMeta(page: PageKey, data: Partial<PageMetaData>): Promise<void> {
+export async function setPageMeta(page: string, data: Partial<PageMetaData>): Promise<void> {
   await prisma.pageMeta.upsert({
     where: { page },
     update: {

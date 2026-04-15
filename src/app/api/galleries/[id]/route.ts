@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { revalidateAllPublicPaths } from "@/lib/revalidate";
 
 export async function GET(
   request: Request,
@@ -67,6 +68,7 @@ export async function PUT(
       data,
     });
 
+    revalidateAllPublicPaths();
     return NextResponse.json(gallery);
   } catch (error) {
     console.error("Failed to update gallery:", error);
@@ -92,6 +94,7 @@ export async function DELETE(
     // Photos are cascade-deleted via Prisma schema
     await prisma.gallery.delete({ where: { id } });
 
+    revalidateAllPublicPaths();
     return NextResponse.json({ message: "Gallery deleted" });
   } catch (error) {
     console.error("Failed to delete gallery:", error);

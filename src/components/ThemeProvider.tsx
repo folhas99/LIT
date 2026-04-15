@@ -15,6 +15,40 @@ const CSS_VAR_MAP: Record<string, string> = {
   themeColorSurface: "--theme-surface",
   themeColorText: "--theme-text",
   themeColorTextMuted: "--theme-text-muted",
+  // Buttons
+  themeButtonPrimaryBg: "--btn-primary-bg",
+  themeButtonPrimaryText: "--btn-primary-text",
+  themeButtonPrimaryHoverBg: "--btn-primary-hover-bg",
+  themeButtonSecondaryBg: "--btn-secondary-bg",
+  themeButtonSecondaryText: "--btn-secondary-text",
+  themeButtonSecondaryBorder: "--btn-secondary-border",
+  themeButtonSecondaryHoverBg: "--btn-secondary-hover-bg",
+  themeButtonGhostText: "--btn-ghost-text",
+  themeButtonGhostHoverBg: "--btn-ghost-hover-bg",
+  // Cards
+  themeCardBg: "--card-bg",
+  themeCardBorderColor: "--card-border",
+  // Inputs
+  themeInputBg: "--input-bg",
+  themeInputBorderColor: "--input-border",
+  themeInputText: "--input-text",
+  themeInputFocusColor: "--input-focus",
+};
+
+// Numeric values that need a unit appended.
+const CSS_VAR_PX_MAP: Record<string, string> = {
+  themeButtonRadius: "--btn-radius",
+  themeButtonPaddingX: "--btn-padding-x",
+  themeButtonPaddingY: "--btn-padding-y",
+  themeCardRadius: "--card-radius",
+  themeCardBorderWidth: "--card-border-width",
+  themeInputRadius: "--input-radius",
+};
+
+// Scalar values applied as-is (no unit conversion).
+const CSS_VAR_RAW_MAP: Record<string, string> = {
+  themeButtonFontWeight: "--btn-font-weight",
+  themeButtonTextTransform: "--btn-text-transform",
 };
 
 const GOOGLE_FONTS_BASE = "https://fonts.googleapis.com/css2?display=swap";
@@ -33,6 +67,42 @@ export default function ThemeProvider() {
           if (theme[key]) {
             root.style.setProperty(cssVar, theme[key]);
           }
+        }
+
+        // Apply px-suffixed numeric variables
+        for (const [key, cssVar] of Object.entries(CSS_VAR_PX_MAP)) {
+          if (theme[key]) {
+            root.style.setProperty(cssVar, `${theme[key]}px`);
+          }
+        }
+
+        // Apply raw scalar variables
+        for (const [key, cssVar] of Object.entries(CSS_VAR_RAW_MAP)) {
+          if (theme[key]) {
+            root.style.setProperty(cssVar, theme[key]);
+          }
+        }
+
+        // Letter-spacing wants an em unit
+        if (theme.themeButtonLetterSpacing) {
+          root.style.setProperty(
+            "--btn-letter-spacing",
+            `${theme.themeButtonLetterSpacing}em`
+          );
+        }
+
+        // Card shadow preset → CSS variable
+        if (theme.themeCardShadow) {
+          const shadows: Record<string, string> = {
+            none: "none",
+            soft: "0 2px 8px rgba(0, 0, 0, 0.25)",
+            medium: "0 4px 16px rgba(0, 0, 0, 0.35)",
+            glow: "0 0 25px rgba(57, 255, 20, 0.08), 0 4px 30px rgba(0, 0, 0, 0.3)",
+          };
+          root.style.setProperty(
+            "--card-shadow",
+            shadows[theme.themeCardShadow] || shadows.soft
+          );
         }
 
         // Apply font CSS variables

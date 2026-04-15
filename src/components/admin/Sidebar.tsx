@@ -33,10 +33,10 @@ const navItems = [
   { label: "Mensagens", href: "/admin/mensagens", icon: MessageSquare },
   { label: "Utilizadores", href: "/admin/utilizadores", icon: Users },
   { label: "Editor Visual", href: "/admin/editor", icon: Palette },
+  { label: "Páginas", href: "/admin/paginas", icon: FileEdit },
   { label: "Secções", href: "/admin/editor/seccoes", icon: LayoutList },
   { label: "Media", href: "/admin/editor/media", icon: ImageIcon },
   { label: "Branding", href: "/admin/editor/branding", icon: Globe },
-  { label: "Editor Páginas", href: "/admin/editor/paginas", icon: FileEdit },
   { label: "Definições", href: "/admin/definicoes", icon: Settings },
   { label: "Logs", href: "/admin/logs", icon: ScrollText },
 ];

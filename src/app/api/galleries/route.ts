@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { revalidateAllPublicPaths } from "@/lib/revalidate";
 
 export async function GET() {
   try {
@@ -62,6 +63,7 @@ export async function POST(request: Request) {
       },
     });
 
+    revalidateAllPublicPaths();
     return NextResponse.json(gallery, { status: 201 });
   } catch (error) {
     console.error("Failed to create gallery:", error);

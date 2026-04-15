@@ -17,6 +17,7 @@ import {
   isSectionEnabled,
   defaults as settingsDefaults,
 } from "@/lib/settings";
+import { prisma } from "@/lib/prisma";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -89,6 +90,7 @@ export default async function RootLayout({
     contact: true,
   };
   let englishEnabled = true;
+  let navItems: Array<{ label: string; labelEn?: string | null; href: string }> = [];
 
   try {
     const base = await getSettings();
@@ -107,6 +109,32 @@ export default async function RootLayout({
         about: isSectionEnabled(settings, "sectionAbout"),
         contact: isSectionEnabled(settings, "sectionContact"),
       };
+
+      // Pull nav items from the Page model. Falls back silently if the table
+      // isn't migrated yet — Header will use the legacy section toggles.
+      try {
+        const pages = await prisma.page.findMany({
+          where: { published: true, showInNav: true },
+          orderBy: { navOrder: "asc" },
+          select: { slug: true, title: true, titleEn: true, navLabel: true, navLabelEn: true },
+        });
+        // System slugs map to fixed top-level URLs; everything else lives under /p/<slug>.
+        const systemHref: Record<string, string> = {
+          homepage: "/",
+          eventos: "/eventos",
+          galeria: "/galeria",
+          reservas: "/reservas",
+          sobre: "/sobre",
+          contacto: "/contacto",
+        };
+        navItems = pages.map((p) => ({
+          label: p.navLabel || p.title,
+          labelEn: p.navLabelEn || p.titleEn,
+          href: systemHref[p.slug] || `/p/${p.slug}`,
+        }));
+      } catch {
+        // Page table missing — leave navItems empty so Header falls back.
+      }
     }
   } catch {
     settings = { ...settingsDefaults };
@@ -153,6 +181,7 @@ export default async function RootLayout({
           {!isAdmin && (
             <Header
               sections={sections}
+              navItems={navItems}
               scheduleJson={settings?.scheduleHours}
               logoUrl={settings?.logoUrl}
               siteName={settings?.siteName}
