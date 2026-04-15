@@ -44,13 +44,14 @@ export async function PATCH(
   }
 }
 
-/** DELETE /api/pages/[id] — delete a non-system page (SUPER_ADMIN). */
+/** DELETE /api/pages/[id] — delete a non-system page. Any authenticated
+ *  admin may do this; system pages remain protected by the `system` flag. */
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as { role?: string }).role !== "SUPER_ADMIN") {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

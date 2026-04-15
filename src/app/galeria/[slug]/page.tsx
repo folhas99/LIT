@@ -11,6 +11,22 @@ import GalleryGrid from "./GalleryGrid";
 import { getServerLocale } from "@/lib/server-locale";
 import { pickLocalized } from "@/lib/settings";
 
+// ISR: prebuild every published gallery, revalidate hourly.
+export const dynamicParams = true;
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  try {
+    const galleries = await prisma.gallery.findMany({
+      where: { published: true },
+      select: { slug: true },
+    });
+    return galleries.map((g) => ({ slug: g.slug }));
+  } catch {
+    return [];
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {

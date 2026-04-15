@@ -4,6 +4,7 @@ import Countdown from "@/components/ui/Countdown";
 import Reveal, { type RevealAnimation } from "@/components/ui/Reveal";
 import { prisma } from "@/lib/prisma";
 import { getSettings, pickLocalized } from "@/lib/settings";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { getServerLocale } from "@/lib/server-locale";
 import { cn } from "@/lib/utils";
 import {
@@ -262,7 +263,7 @@ function TextSection({ content, ctx }: { content: Record<string, unknown>; ctx: 
       )}
       {body && (
         isHtml ? (
-          <div className="rich-content text-gray-300 leading-relaxed mt-4" dangerouslySetInnerHTML={{ __html: body }} />
+          <div className="rich-content text-gray-300 leading-relaxed mt-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(body) }} />
         ) : (
           <div className="text-gray-300 leading-relaxed whitespace-pre-wrap mt-4">{body}</div>
         )

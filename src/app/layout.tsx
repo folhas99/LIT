@@ -164,6 +164,11 @@ export default async function RootLayout({
         <meta name="theme-color" content="#0a1f0f" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* Warm up the Google Fonts connection — the admin theme editor may
+            pick families loaded from there, and preconnecting saves the
+            TLS handshake on the critical path. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* @font-face rules for admin-uploaded custom fonts. */}
         <link rel="stylesheet" href="/api/fonts/stylesheet.css" />
         {/* Expose uploaded font families so ThemeProvider doesn't try to

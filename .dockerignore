@@ -1,0 +1,39 @@
+# Keep the Docker context small so builds are fast and layers cacheable.
+
+# VCS
+.git
+.gitignore
+.github
+
+# Node / Next
+node_modules
+.next
+.turbo
+out
+dist
+coverage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local state
+.env
+.env.local
+.env.*.local
+.vscode
+.idea
+.DS_Store
+*.swp
+*.swo
+
+# Build artifacts & uploads (re-created at runtime via the Docker volume)
+public/uploads
+
+# Docs / misc that never needs to ship
+README.md
+AGENTS.md
+CLAUDE.md
+docs
+*.md
+!prisma/migrations/**/README.md

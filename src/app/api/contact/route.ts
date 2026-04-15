@@ -14,8 +14,20 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
+    // Explicit select keeps the contract obvious and guards against
+    // accidental column additions leaking through the API.
     const messages = await prisma.contactMessage.findMany({
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        subject: true,
+        message: true,
+        read: true,
+        createdAt: true,
+      },
     });
     return NextResponse.json(messages);
   } catch (error) {

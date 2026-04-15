@@ -87,6 +87,11 @@ model Reservation {
   eventId   String?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
+
+  @@index([status, date])
+  @@index([date])
+  @@index([email])
+  @@index([eventId])
 }
 
 enum ReservationStatus {

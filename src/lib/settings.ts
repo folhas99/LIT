@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "./prisma";
 
 export type SiteSettings = {
@@ -177,14 +178,20 @@ export const defaults: SiteSettings = {
   mapLongitude: "-8.4292",
 };
 
-export async function getSettings(): Promise<SiteSettings> {
+/**
+ * Wrapped with React `cache()` so every call within the same request
+ * dedupes to a single Prisma round-trip. Public pages, API routes, and
+ * the layout itself all hit this — caching knocks ~19 queries per request
+ * down to 1.
+ */
+export const getSettings = cache(async (): Promise<SiteSettings> => {
   const settings = await prisma.siteSetting.findMany();
   const map: Record<string, string> = {};
   for (const s of settings) {
     map[s.key] = s.value;
   }
   return { ...defaults, ...map } as SiteSettings;
-}
+});
 
 export async function getSetting(key: string): Promise<string> {
   const setting = await prisma.siteSetting.findUnique({ where: { key } });
@@ -247,9 +254,9 @@ export function isEnglishEnabled(settings: SiteSettings): boolean {
  * English value when `locale === "en"` and an EN override exists; otherwise
  * falls back to the Portuguese value.
  */
-export async function getLocalizedSettings(
+export const getLocalizedSettings = cache(async (
   locale: "pt" | "en"
-): Promise<SiteSettings> {
+): Promise<SiteSettings> => {
   const base = await getSettings();
   if (locale !== "en" || !isEnglishEnabled(base)) return base;
 
@@ -264,7 +271,7 @@ export async function getLocalizedSettings(
     if (v && v.trim()) (out as Record<string, string>)[k] = v;
   }
   return out;
-}
+});
 
 /**
  * Given an Event-like or Gallery-like record with both PT and EN variants,

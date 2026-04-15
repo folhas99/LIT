@@ -9,6 +9,24 @@ import { logError } from "@/lib/logger";
 import { EventJsonLd } from "@/components/SEO";
 import { pickLocalized } from "@/lib/settings";
 import { getServerLocale } from "@/lib/server-locale";
+import { sanitizeHtml } from "@/lib/sanitize";
+
+// ISR: prebuild every published event, revalidate hourly, and let
+// newly-published events render on first visit.
+export const dynamicParams = true;
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  try {
+    const events = await prisma.event.findMany({
+      where: { published: true },
+      select: { slug: true },
+    });
+    return events.map((e) => ({ slug: e.slug }));
+  } catch {
+    return [];
+  }
+}
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -138,7 +156,7 @@ export default async function EventoPage({
         {description && (
           <div
             className="prose prose-invert prose-sm max-w-none mb-12 text-gray-300 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: description }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
           />
         )}
 

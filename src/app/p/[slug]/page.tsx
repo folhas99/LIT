@@ -5,8 +5,6 @@ import PageRenderer from "@/components/sections/PageRenderer";
 import { buildPageMetadata } from "@/lib/page-meta";
 import { getServerLocale } from "@/lib/server-locale";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Catch-all route for user-created pages. System pages (homepage, sobre, etc.)
  * keep their own dedicated route files at the top level — this catch-all
@@ -15,11 +13,34 @@ export const dynamic = "force-dynamic";
  * If you'd rather have user pages at the URL root (WordPress-style), move this
  * file to /src/app/[slug]/page.tsx — Next.js will still prefer the more
  * specific system routes, so existing pages won't break.
+ *
+ * Rendering strategy: `generateStaticParams` prebuilds every published custom
+ * page at build time. Admin edits flush the cache via
+ * `revalidateAllPublicPaths()` so visitors always see the latest content
+ * without paying for SSR on every request. `dynamicParams: true` lets newly
+ * created pages render on first hit before the next revalidation.
  */
+
+export const dynamicParams = true;
+export const revalidate = 3600;
 
 const SYSTEM_SLUGS_BLOCKED_HERE = new Set([
   "homepage", "eventos", "galeria", "reservas", "sobre", "contacto",
 ]);
+
+export async function generateStaticParams() {
+  try {
+    const pages = await prisma.page.findMany({
+      where: { published: true },
+      select: { slug: true },
+    });
+    return pages
+      .filter((p) => !SYSTEM_SLUGS_BLOCKED_HERE.has(p.slug))
+      .map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }

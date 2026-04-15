@@ -65,7 +65,7 @@ export default function AdminLogsPage() {
     try {
       const res = await fetch("/api/debug/logs");
       if (res.status === 403) {
-        setError("Acesso negado. Apenas SUPER_ADMIN pode aceder a esta página.");
+        setError("Acesso negado.");
         setLoading(false);
         return;
       }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 type TabItem = {
   label: string;
@@ -93,7 +94,7 @@ export default function TabsSection({ content, ctx }: Props) {
           <div
             role="tabpanel"
             className="flex-1 min-w-0 text-gray-300 leading-relaxed prose prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: bodyOf(current) || "" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(bodyOf(current)) }}
           />
         )}
       </div>

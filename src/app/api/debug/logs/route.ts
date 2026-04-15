@@ -7,10 +7,7 @@ import { getRecentErrors, clearErrors } from "@/lib/logger";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (
-      !session?.user ||
-      (session.user as { role?: string }).role !== "SUPER_ADMIN"
-    ) {
+    if (!session?.user) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -70,10 +67,7 @@ export async function GET() {
 export async function DELETE() {
   try {
     const session = await getServerSession(authOptions);
-    if (
-      !session?.user ||
-      (session.user as { role?: string }).role !== "SUPER_ADMIN"
-    ) {
+    if (!session?.user) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

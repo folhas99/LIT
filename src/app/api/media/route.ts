@@ -53,7 +53,7 @@ export async function GET() {
 export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as { role?: string }).role !== "SUPER_ADMIN") {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

@@ -1,22 +1,34 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { getCurrentAdmin, isSuperAdmin } from "@/lib/admin-auth";
 
+/**
+ * User management endpoints.
+ *
+ * Permission model:
+ * - Any authenticated admin can list, create, update, and delete admin users.
+ * - ADMIN viewers never see SUPER_ADMIN accounts: they're filtered out of
+ *   the list, and creation of new SUPER_ADMINs is blocked (role is forced
+ *   to "ADMIN").
+ * - Only SUPER_ADMIN can touch other SUPER_ADMIN records (edit/delete
+ *   responses 404 from an ADMIN's perspective to keep them hidden).
+ */
 export async function GET() {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const me = await getCurrentAdmin();
+  if (!me) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
+  try {
     const users = await prisma.user.findMany({
       select: { id: true, email: true, name: true, role: true, createdAt: true },
       orderBy: { createdAt: "asc" },
     });
 
-    return NextResponse.json(users);
+    // SUPER_ADMIN users are invisible to plain ADMINs.
+    const visible = isSuperAdmin(me) ? users : users.filter((u) => u.role !== "SUPER_ADMIN");
+    return NextResponse.json(visible);
   } catch (error) {
     console.error("Failed to fetch users:", error);
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
@@ -24,20 +36,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const me = await getCurrentAdmin();
+  if (!me) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Only SUPER_ADMIN can create users
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user?.email || "" },
-    });
-    if (currentUser?.role !== "SUPER_ADMIN") {
-      return NextResponse.json({ error: "Apenas SUPER_ADMIN pode criar utilizadores" }, { status: 403 });
-    }
-
     const body = await request.json();
     const { email, password, name, role } = body;
 
@@ -54,6 +58,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Já existe um utilizador com este email" }, { status: 409 });
     }
 
+    // Only SUPER_ADMIN can mint SUPER_ADMIN accounts. An ADMIN trying to
+    // escalate privileges is silently downgraded to ADMIN.
+    const finalRole =
+      role === "SUPER_ADMIN" && isSuperAdmin(me) ? "SUPER_ADMIN" : "ADMIN";
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await prisma.user.create({
@@ -61,7 +70,7 @@ export async function POST(request: Request) {
         email,
         password: hashedPassword,
         name,
-        role: role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN",
+        role: finalRole,
       },
       select: { id: true, email: true, name: true, role: true, createdAt: true },
     });

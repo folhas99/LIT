@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 type AccordionItem = {
   question: string;
@@ -81,7 +82,7 @@ export default function AccordionSection({ content, ctx }: Props) {
                 <div className="overflow-hidden">
                   <div
                     className="px-5 pb-5 text-gray-300 text-sm leading-relaxed prose prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: a }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(a) }}
                   />
                 </div>
               </div>

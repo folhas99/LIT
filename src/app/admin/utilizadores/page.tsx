@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Plus, Trash2, Shield, ShieldCheck, Eye, EyeOff } from "lucide-react";
 
 type User = {
@@ -12,6 +13,9 @@ type User = {
 };
 
 export default function AdminUtilizadoresPage() {
+  const { data: session } = useSession();
+  const viewerIsSuperAdmin =
+    (session?.user as { role?: string } | undefined)?.role === "SUPER_ADMIN";
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -129,17 +133,19 @@ export default function AdminUtilizadoresPage() {
                 </button>
               </div>
             </div>
-            <div>
-              <label className="block text-sm text-gray-300 mb-1.5">Função</label>
-              <select
-                value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full px-4 py-2.5 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white text-sm focus:outline-none focus:border-jungle-500 transition-colors"
-              >
-                <option value="ADMIN">Admin</option>
-                <option value="SUPER_ADMIN">Super Admin</option>
-              </select>
-            </div>
+            {viewerIsSuperAdmin && (
+              <div>
+                <label className="block text-sm text-gray-300 mb-1.5">Função</label>
+                <select
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-jungle-900 border border-jungle-700/50 rounded-sm text-white text-sm focus:outline-none focus:border-jungle-500 transition-colors"
+                >
+                  <option value="ADMIN">Admin</option>
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                </select>
+              </div>
+            )}
 
             {error && (
               <p className="text-red-400 text-sm">{error}</p>

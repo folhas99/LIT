@@ -23,9 +23,25 @@ export async function GET(request: Request) {
       where.date = { gte: new Date() };
     }
 
+    // Only the fields needed by list views — callers wanting full content
+    // hit /api/events/[id] or the dedicated event page. Keeps the list
+    // payload small and avoids shipping large `description` / `lineup` HTML.
     const events = await prisma.event.findMany({
       where,
       orderBy: { date: "asc" },
+      select: {
+        id: true,
+        title: true,
+        titleEn: true,
+        slug: true,
+        date: true,
+        endDate: true,
+        image: true,
+        eventType: true,
+        featured: true,
+        published: true,
+        createdAt: true,
+      },
     });
 
     return NextResponse.json(events);

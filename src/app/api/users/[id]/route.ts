@@ -1,34 +1,54 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { getCurrentAdmin, isSuperAdmin, type AdminUser } from "@/lib/admin-auth";
+
+/**
+ * Helpers: from an ADMIN's perspective, SUPER_ADMIN records simply don't
+ * exist. Return 404 (not 403) so we never hint at their presence.
+ */
+async function loadTargetForRequester(requester: AdminUser, id: string) {
+  const target = await prisma.user.findUnique({ where: { id } });
+  if (!target) return { status: 404 as const, target: null };
+  if (!isSuperAdmin(requester) && target.role === "SUPER_ADMIN") {
+    return { status: 404 as const, target: null };
+  }
+  return { status: 200 as const, target };
+}
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const me = await getCurrentAdmin();
+  if (!me) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user?.email || "" },
-    });
-    if (currentUser?.role !== "SUPER_ADMIN") {
-      return NextResponse.json({ error: "Apenas SUPER_ADMIN pode editar utilizadores" }, { status: 403 });
-    }
-
     const { id } = await params;
+    const { status, target } = await loadTargetForRequester(me, id);
+    if (status === 404 || !target) {
+      return NextResponse.json({ error: "Utilizador não encontrado" }, { status: 404 });
+    }
+
     const body = await request.json();
     const { name, email, password, role } = body;
 
     const data: Record<string, unknown> = {};
     if (name) data.name = name;
     if (email) data.email = email;
-    if (role) data.role = role;
+
+    // Role changes are limited: an ADMIN can never promote anyone to
+    // SUPER_ADMIN. SUPER_ADMINs can change roles freely.
+    if (role) {
+      if (role === "SUPER_ADMIN" && !isSuperAdmin(me)) {
+        // Silently ignore the escalation attempt.
+      } else {
+        data.role = role;
+      }
+    }
+
     if (password && password.length >= 6) {
       data.password = await bcrypt.hash(password, 12);
     }
@@ -50,28 +70,34 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const me = await getCurrentAdmin();
+  if (!me) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user?.email || "" },
-    });
-    if (currentUser?.role !== "SUPER_ADMIN") {
-      return NextResponse.json({ error: "Apenas SUPER_ADMIN pode apagar utilizadores" }, { status: 403 });
-    }
-
     const { id } = await params;
-
-    // Prevent deleting SUPER_ADMIN users
-    const targetUser = await prisma.user.findUnique({ where: { id } });
-    if (!targetUser) {
+    const { status, target } = await loadTargetForRequester(me, id);
+    if (status === 404 || !target) {
       return NextResponse.json({ error: "Utilizador não encontrado" }, { status: 404 });
     }
-    if (targetUser.role === "SUPER_ADMIN") {
-      return NextResponse.json({ error: "Não é possível apagar um SUPER_ADMIN" }, { status: 403 });
+
+    // SUPER_ADMIN accounts can never be deleted via the API — even by
+    // another SUPER_ADMIN — to keep a bootstrap account safe. Demote first
+    // if one really needs to be removed.
+    if (target.role === "SUPER_ADMIN") {
+      return NextResponse.json(
+        { error: "Não é possível apagar um SUPER_ADMIN" },
+        { status: 403 }
+      );
+    }
+
+    // Don't let an admin lock themselves out.
+    if (target.id === me.id) {
+      return NextResponse.json(
+        { error: "Não podes apagar a tua própria conta." },
+        { status: 400 }
+      );
     }
 
     await prisma.user.delete({ where: { id } });
