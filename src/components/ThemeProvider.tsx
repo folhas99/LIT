@@ -113,12 +113,32 @@ export default function ThemeProvider() {
           root.style.setProperty("--theme-font-body", `"${theme.themeFontBody}", sans-serif`);
         }
 
-        // Load Google Fonts dynamically
+        // Load Google Fonts dynamically — skip for fonts already provided as
+        // @font-face rules (admin uploads) or system fallbacks.
+        const customFamilies: Set<string> = new Set(
+          (window as unknown as { __LIT_CUSTOM_FONTS__?: string[] }).__LIT_CUSTOM_FONTS__ || [],
+        );
+        const SYSTEM_FAMILIES = new Set([
+          "system-ui",
+          "sans-serif",
+          "serif",
+          "monospace",
+          "Inter",
+        ]);
+
         const fonts = new Set<string>();
-        if (theme.themeFontHeading && theme.themeFontHeading !== "Inter") {
+        if (
+          theme.themeFontHeading &&
+          !SYSTEM_FAMILIES.has(theme.themeFontHeading) &&
+          !customFamilies.has(theme.themeFontHeading)
+        ) {
           fonts.add(theme.themeFontHeading);
         }
-        if (theme.themeFontBody && theme.themeFontBody !== "Inter") {
+        if (
+          theme.themeFontBody &&
+          !SYSTEM_FAMILIES.has(theme.themeFontBody) &&
+          !customFamilies.has(theme.themeFontBody)
+        ) {
           fonts.add(theme.themeFontBody);
         }
 

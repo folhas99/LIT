@@ -28,14 +28,6 @@ const bilingualSettingsFields = [
   { key: "schedule", label: "Horário (texto)" },
 ];
 
-const sectionToggles = [
-  { key: "sectionEvents", label: "Secção Eventos" },
-  { key: "sectionGallery", label: "Secção Galeria" },
-  { key: "sectionReservations", label: "Secção Reservas VIP" },
-  { key: "sectionAbout", label: "Secção Sobre" },
-  { key: "sectionContact", label: "Secção Contacto" },
-];
-
 export default function AdminDefinicoesPage() {
   const [settings, setSettings] = useState<Settings>({});
   const [loading, setLoading] = useState(true);
@@ -264,41 +256,6 @@ export default function AdminDefinicoesPage() {
                 </div>
               );
             })}
-          </div>
-        </section>
-
-        {/* Section toggles */}
-        <section>
-          <h2 className="text-lg font-semibold text-white mb-4">
-            Secções do Site
-          </h2>
-          <p className="text-gray-500 text-sm mb-4">
-            Ativa ou desativa secções no frontend. As secções desativadas não aparecerão no menu nem na homepage.
-          </p>
-          <div className="space-y-3">
-            {sectionToggles.map((toggle) => (
-              <label
-                key={toggle.key}
-                className="flex items-center justify-between p-3 bg-jungle-900/50 border border-jungle-700/30 rounded-sm cursor-pointer hover:bg-jungle-800/50 transition-colors"
-              >
-                <span className="text-gray-300 text-sm">{toggle.label}</span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={settings[toggle.key] !== "false"}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        [toggle.key]: e.target.checked ? "true" : "false",
-                      })
-                    }
-                    className="sr-only peer"
-                  />
-                  <div className="w-10 h-5 bg-jungle-700 rounded-full peer-checked:bg-jungle-500 transition-colors" />
-                  <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full peer-checked:translate-x-5 transition-transform" />
-                </div>
-              </label>
-            ))}
           </div>
         </section>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Palette, FileText, Image, ArrowRight, LayoutList, Globe, Wand2 } from "lucide-react";
+import { Palette, FileText, Image, ArrowRight, LayoutList, Globe, Wand2, Type } from "lucide-react";
 
 const editorCards = [
   {
@@ -45,6 +45,13 @@ const editorCards = [
     title: "Branding & Ícones",
     description:
       "Personaliza o favicon, logo e identidade visual do site.",
+  },
+  {
+    href: "/admin/editor/fontes",
+    icon: Type,
+    title: "Fontes",
+    description:
+      "Carrega fontes personalizadas (.woff2, .woff, .ttf, .otf) e usa-as no editor de tema.",
   },
 ];
 

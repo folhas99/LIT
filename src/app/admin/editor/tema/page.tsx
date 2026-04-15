@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Save,
   CheckCircle,
@@ -9,6 +10,7 @@ import {
   Palette,
   Type,
   Sparkles,
+  Upload,
 } from "lucide-react";
 
 type ThemeSettings = Record<string, string>;
@@ -63,7 +65,14 @@ const colorGroups = [
   },
 ];
 
-const fontOptions = [
+const SYSTEM_FONTS = [
+  { value: "system-ui", label: "Sistema (system-ui)" },
+  { value: "sans-serif", label: "Sans-serif (genérica)" },
+  { value: "serif", label: "Serif (genérica)" },
+  { value: "monospace", label: "Monospace (genérica)" },
+];
+
+const GOOGLE_FONTS = [
   "Inter",
   "Poppins",
   "Montserrat",
@@ -74,16 +83,87 @@ const fontOptions = [
   "Open Sans",
   "Lato",
   "Source Sans Pro",
+  "Bebas Neue",
+  "Anton",
+  "Archivo",
+  "Space Grotesk",
+  "Cormorant Garamond",
+  "DM Sans",
+  "DM Serif Display",
+  "Manrope",
+  "Outfit",
+  "Work Sans",
 ];
+
+type UploadedFont = {
+  id: string;
+  name: string;
+  family: string;
+  weight: number;
+  style: string;
+};
 
 function isValidHex(value: string): boolean {
   return /^#[0-9a-fA-F]{6}$/.test(value);
+}
+
+function FontPicker({
+  value,
+  onChange,
+  uploaded,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  uploaded: UploadedFont[];
+}) {
+  // Deduplicate uploaded font families (multiple weights can share a family).
+  const uploadedFamilies = Array.from(new Set(uploaded.map((f) => f.family)));
+  const isKnown =
+    uploadedFamilies.includes(value) ||
+    GOOGLE_FONTS.includes(value) ||
+    SYSTEM_FONTS.some((f) => f.value === value);
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-3 py-2.5 bg-jungle-950 border border-jungle-700/50 rounded-sm text-white text-sm focus:outline-none focus:border-jungle-500 transition-colors"
+    >
+      {!isKnown && value && (
+        <option value={value}>{value} (em uso)</option>
+      )}
+      {uploadedFamilies.length > 0 && (
+        <optgroup label="Carregadas">
+          {uploadedFamilies.map((family) => (
+            <option key={`up-${family}`} value={family}>
+              {family}
+            </option>
+          ))}
+        </optgroup>
+      )}
+      <optgroup label="Google Fonts">
+        {GOOGLE_FONTS.map((font) => (
+          <option key={`g-${font}`} value={font}>
+            {font}
+          </option>
+        ))}
+      </optgroup>
+      <optgroup label="Sistema">
+        {SYSTEM_FONTS.map((font) => (
+          <option key={`s-${font.value}`} value={font.value}>
+            {font.label}
+          </option>
+        ))}
+      </optgroup>
+    </select>
+  );
 }
 
 export default function ThemeEditorPage() {
   const [theme, setTheme] = useState<ThemeSettings>({ ...defaultTheme });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadedFonts, setUploadedFonts] = useState<UploadedFont[]>([]);
   const [toast, setToast] = useState<{
     type: "success" | "error";
     message: string;
@@ -99,6 +179,15 @@ export default function ThemeEditorPage() {
       .catch(() => {
         setLoading(false);
       });
+  }, []);
+
+  // Load uploaded fonts so the picker can list them in addition to Google /
+  // system fonts. Failures are silent — the picker just shows the built-ins.
+  useEffect(() => {
+    fetch("/api/fonts", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: UploadedFont[]) => setUploadedFonts(Array.isArray(data) ? data : []))
+      .catch(() => setUploadedFonts([]));
   }, []);
 
   useEffect(() => {
@@ -267,9 +356,18 @@ export default function ThemeEditorPage() {
 
         {/* Typography */}
         <section className="mb-10">
-          <div className="flex items-center gap-2 mb-6">
-            <Type size={20} className="text-jungle-400" />
-            <h2 className="text-lg font-semibold text-white">Tipografia</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Type size={20} className="text-jungle-400" />
+              <h2 className="text-lg font-semibold text-white">Tipografia</h2>
+            </div>
+            <Link
+              href="/admin/editor/fontes"
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-jungle-900 border border-jungle-700/50 hover:bg-jungle-800 text-gray-300 hover:text-white text-xs rounded-sm transition-colors"
+            >
+              <Upload size={14} />
+              Gerir fontes
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -277,22 +375,14 @@ export default function ThemeEditorPage() {
               <label className="block text-sm text-gray-300 mb-2">
                 Fonte dos Titulos
               </label>
-              <select
+              <FontPicker
                 value={theme.themeFontHeading || "Inter"}
-                onChange={(e) =>
-                  updateField("themeFontHeading", e.target.value)
-                }
-                className="w-full px-3 py-2.5 bg-jungle-950 border border-jungle-700/50 rounded-sm text-white text-sm focus:outline-none focus:border-jungle-500 transition-colors"
-              >
-                {fontOptions.map((font) => (
-                  <option key={font} value={font}>
-                    {font}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => updateField("themeFontHeading", v)}
+                uploaded={uploadedFonts}
+              />
               <p
                 className="mt-3 text-lg text-white"
-                style={{ fontFamily: theme.themeFontHeading }}
+                style={{ fontFamily: `"${theme.themeFontHeading}", sans-serif` }}
               >
                 Exemplo de Titulo
               </p>
@@ -302,27 +392,26 @@ export default function ThemeEditorPage() {
               <label className="block text-sm text-gray-300 mb-2">
                 Fonte do Corpo
               </label>
-              <select
+              <FontPicker
                 value={theme.themeFontBody || "Inter"}
-                onChange={(e) =>
-                  updateField("themeFontBody", e.target.value)
-                }
-                className="w-full px-3 py-2.5 bg-jungle-950 border border-jungle-700/50 rounded-sm text-white text-sm focus:outline-none focus:border-jungle-500 transition-colors"
-              >
-                {fontOptions.map((font) => (
-                  <option key={font} value={font}>
-                    {font}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => updateField("themeFontBody", v)}
+                uploaded={uploadedFonts}
+              />
               <p
                 className="mt-3 text-sm text-gray-300"
-                style={{ fontFamily: theme.themeFontBody }}
+                style={{ fontFamily: `"${theme.themeFontBody}", sans-serif` }}
               >
                 Exemplo de texto do corpo do site com a fonte selecionada.
               </p>
             </div>
           </div>
+
+          {uploadedFonts.length === 0 && (
+            <p className="mt-3 text-xs text-gray-500">
+              Dica: podes carregar fontes próprias (.woff2, .woff, .ttf, .otf)
+              em <Link href="/admin/editor/fontes" className="text-jungle-300 hover:underline">Gerir fontes</Link>.
+            </p>
+          )}
         </section>
 
         {/* Effects */}

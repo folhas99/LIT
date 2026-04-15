@@ -175,3 +175,34 @@ model ActivityLog {
   @@index([createdAt])
   @@index([entity, entityId])
 }
+
+/// Custom fonts uploaded through the admin. Each row corresponds to one font
+/// file in `public/uploads/fonts/`. The `family` column is what gets used as
+/// `font-family` in CSS — usually equal to `name`, but kept separate so users
+/// can rename the display label without breaking existing references.
+model Font {
+  id           String   @id @default(cuid())
+  /// Display name in the admin picker (e.g. "Acumin Pro").
+  name         String
+  /// CSS font-family — what the @font-face rule binds to.
+  family       String
+  /// Original uploaded filename (for the admin UI only).
+  originalName String
+  /// Stored filename inside /uploads/fonts/. Globally unique.
+  filename     String   @unique
+  /// Public URL the browser fetches (e.g. /uploads/fonts/abc.woff2).
+  url          String
+  /// File extension without the dot — used to pick the @font-face format hint.
+  format       String   // "woff2" | "woff" | "ttf" | "otf"
+  /// File size in bytes (for display only).
+  size         Int
+  /// Numeric weight: 100..900. Defaults to 400.
+  weight       Int      @default(400)
+  /// "normal" | "italic"
+  style        String   @default("normal")
+  /// "swap" | "block" | "optional" | "fallback" — controls font-display.
+  display      String   @default("swap")
+  createdAt    DateTime @default(now())
+
+  @@index([family])
+}

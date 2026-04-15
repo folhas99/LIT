@@ -91,6 +91,7 @@ export default async function RootLayout({
   };
   let englishEnabled = true;
   let navItems: Array<{ label: string; labelEn?: string | null; href: string }> = [];
+  let customFontFamilies: string[] = [];
 
   try {
     const base = await getSettings();
@@ -136,6 +137,16 @@ export default async function RootLayout({
         // Page table missing — leave navItems empty so Header falls back.
       }
     }
+
+    // Expose uploaded font family names to the client so ThemeProvider can
+    // skip loading them from Google Fonts. Failure here is non-fatal —
+    // ThemeProvider degrades to its previous behaviour.
+    try {
+      const fonts = await prisma.font.findMany({ select: { family: true } });
+      customFontFamilies = Array.from(new Set(fonts.map((f) => f.family)));
+    } catch {
+      customFontFamilies = [];
+    }
   } catch {
     settings = { ...settingsDefaults };
   }
@@ -153,6 +164,15 @@ export default async function RootLayout({
         <meta name="theme-color" content="#0a1f0f" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* @font-face rules for admin-uploaded custom fonts. */}
+        <link rel="stylesheet" href="/api/fonts/stylesheet.css" />
+        {/* Expose uploaded font families so ThemeProvider doesn't try to
+            load them from Google Fonts. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__LIT_CUSTOM_FONTS__=${JSON.stringify(customFontFamilies)};`,
+          }}
+        />
         {settings?.faviconUrl && (
           <>
             <link rel="icon" href={settings.faviconUrl} />
